@@ -142,7 +142,7 @@ class GeneticCode {
 		return javaCode;
 	}
 	
-	String GeneToJava(String gene,String[] eventValues){//TODO:update to reflect conditionals and radar
+	String GeneToJava(String gene,String[] eventValues){//TODO:I'm fairly sure commands like setAhead(0) don't do anything; if so do't bother parsing them
 		String javaCode="";
 		String workingValue="0";//reset this each time
 		int loopDepth=0;
@@ -249,7 +249,7 @@ class GeneticCode {
 			default:
 				int staticCommands=30;
 				if(command<staticCommands+eventValues.length){
-					workingValue=eventValues[command-25]; 
+					workingValue=eventValues[command-staticCommands]; 
 				}else if(command<staticCommands+2*eventValues.length){
 					workingValue="("+workingValue+")+"+eventValues[command-(staticCommands+eventValues.length)]; 
 				}else if(command<staticCommands+3*eventValues.length){
@@ -262,12 +262,14 @@ class GeneticCode {
 				break;//otherwise, do nothing- junk rna
 			}
 		}
+		for (;loopDepth>0;loopDepth-=1)
+			javaCode+="}";
 		return javaCode;
 	}
 	
 	//Apply genetic mutations to the genome
 	public void mutate(){
-		//TODO: different types of mutation
+		//TODO: different types of mutation, copying/moving genes from one to another?, swapping the order of genes? 
 		Random generator=new Random();
 		for (int i=0; i<genomeLength;i++){
 			String mutatedGene="";
@@ -319,7 +321,7 @@ class GeneticCode {
 	}
 	
 	//write this genome to a file so a robot can use it
-	public void commitToRobot(String botName) throws FileNotFoundException, UnsupportedEncodingException{
+	public void commitToRobot(String botName) throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
 
 		File robotDataDirectory=new File(robotPath + botName + ".data");
 		if(!robotDataDirectory.exists())
