@@ -30,20 +30,18 @@ public class EvolveBot extends AdvancedRobot
  		}
  		return threasholds;
  	}
-	private String[] genes=new String[numberOfGenes];
+	private int[][] genes=new int[numberOfGenes][];
 	
 	
 	/*
 	 * eventValues.length must be <25 otherwise the latter values will never get used
 	 */
-	void ActOnGene(String gene,double[] eventValues){
+	void ActOnGene(int[] gene,double[] eventValues){
 		double workingValue=0;//reset this each time
 		boolean skipping=false;
-		for(int i=0;i< gene.length();i+=4){
-			int command=Integer.parseInt(gene.substring(i,i+2), 16);
-			int value=Integer.parseInt(gene.substring(i+2,i+4), 16);
+		for(int i=0;i< gene.length;i++){
 			if(!skipping){
-				switch(command){
+				switch(gene[i]){
 				case 0:
 					//zero is reserved as a loop terminator
 					skipping=false;
@@ -112,44 +110,44 @@ public class EvolveBot extends AdvancedRobot
 					setTurnRadarRight(workingValue);
 					break;
 				case 22:
-					workingValue+=value;
+					workingValue+=gene[i++];
 					break;
 				case 23:
-					workingValue-=value;
+					workingValue-=gene[i++];
 					break;
 				case 24:
-					workingValue*=value;
+					workingValue*=gene[i++];
 					break;
 				case 25:
-					workingValue/=value;
+					workingValue/=gene[i++];
 					break;
 				case 26:
-					workingValue=value;
+					workingValue=gene[i++];
 					break;
 				case 27:
-					if(workingValue>value)
+					if(workingValue>gene[i++])
 						skipping=true;
 					break;
 				case 28:
-					if(workingValue<value)
+					if(workingValue<gene[i++])
 						skipping=true;
 					break;
 				case 29:
-					if(workingValue==value)
+					if(workingValue==gene[i++])
 						skipping=true;
 					break;
 				default:
 					int staticCommands=30;
-					if(command<staticCommands+eventValues.length){
-						workingValue=eventValues[command-staticCommands]; 
-					}else if(command<staticCommands+2*eventValues.length){
-						workingValue+=eventValues[command-(staticCommands+eventValues.length)]; 
-					}else if(command<staticCommands+3*eventValues.length){
-						workingValue-=eventValues[command-(staticCommands+2*eventValues.length)]; 
-					}else if(command<staticCommands+4*eventValues.length){
-						workingValue*=eventValues[command-(staticCommands+3*eventValues.length)]; 
-					}else if(command<staticCommands+5*eventValues.length){
-						workingValue/=eventValues[command-(staticCommands+4*eventValues.length)]; 
+					if(gene[i]<staticCommands+eventValues.length){
+						workingValue=eventValues[gene[i]-staticCommands]; 
+					}else if(gene[i]<staticCommands+2*eventValues.length){
+						workingValue+=eventValues[gene[i]-(staticCommands+eventValues.length)]; 
+					}else if(gene[i]<staticCommands+3*eventValues.length){
+						workingValue-=eventValues[gene[i]-(staticCommands+2*eventValues.length)]; 
+					}else if(gene[i]<staticCommands+4*eventValues.length){
+						workingValue*=eventValues[gene[i]-(staticCommands+3*eventValues.length)]; 
+					}else if(gene[i]<staticCommands+5*eventValues.length){
+						workingValue/=eventValues[gene[i]-(staticCommands+4*eventValues.length)]; 
 					}
 					break;//otherwise, do nothing- junk rna
 				}
@@ -172,7 +170,12 @@ public class EvolveBot extends AdvancedRobot
 		try {
 			//This is where we use the geneticcode data to set the behaviour
 			for(int i=0;i<numberOfGenes;i++){
-				genes[i]=br.readLine();
+				String geneString=br.readLine();
+				int geneLength=geneString.length()/2;
+				genes[i]=new int[geneString.length()/2];
+				for(int j=0;j< geneLength;j+=2){
+					genes[i][j]=Integer.parseInt(geneString.substring(j*2,(j*2)+2), 16);
+				}
 			}
 
 		} catch (IOException e) {

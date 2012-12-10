@@ -52,7 +52,7 @@ public class RobotBreeder {
 			int[][] rankings=scoreKeeper.getRankings();
 			GeneticCode[] newGeneration = new GeneticCode[16];
 			System.out.println("Bot" + String.valueOf(rankings[0][0]+1)+" wins generation " + String.valueOf(generation) + "! "+String.valueOf(rankings[0][1])+" "+currentGeneration[rankings[0][0]].toJavaCode());
-			log.println(String.valueOf(generation) + " "+String.valueOf(rankings[0][1])+" "+currentGeneration[rankings[0][0]].toStrippedString());
+			log.println(String.valueOf(generation) + " "+String.valueOf(rankings[0][1]));
 			log.flush();
 			
 			//first keep the top 8 scorers:
@@ -73,10 +73,7 @@ public class RobotBreeder {
 				newGeneration[12+i] = new GeneticCode(currentGeneration[rankings[generator.nextInt(8)][0]],currentGeneration[rankings[generator.nextInt(8)][0]]);
 			}
 
-			//then add random mutations to and commit to file all of the new generation
-			for(int i=8;i<16;i++){
-				newGeneration[i].mutate();
-			}
+			//then commit to file all of the new generation
 			for(int i=0;i<16;i++){
 				String botName="EB"+String.valueOf(i+1);
 				newGeneration[i].commitToRobot(botName);

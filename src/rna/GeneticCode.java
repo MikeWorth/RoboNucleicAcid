@@ -20,7 +20,7 @@ class GeneticCode {
 	private String[] genome;
 	private static double mutationRate=0.1;
 	private static double mutationMagnitude=100;
-	private static double seedLength=0.99;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
+	private static double seedLength=0.995;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
 	
 	//This reads an existing genome file
 	public GeneticCode(String botName) throws NumberFormatException, IOException{
@@ -59,28 +59,37 @@ class GeneticCode {
 			String genome1="";
 			String genome2="";
 
-			if(parent1.genome[i].length()<parent2.genome[i].length()){
+			//make genome1 the shorter of the two
+			if(parent1.genome[i].length() < parent2.genome[i].length()){
 				genome1=parent1.genome[i];
 				genome2=parent2.genome[i];
 			}else{
 				genome1=parent2.genome[i];
 				genome2=parent1.genome[i];
 			}
+			
 			int chopPlace=0;
 			if (genome1.length()>0)
 				chopPlace=generator.nextInt(genome1.length());
 			
-			while(chopPlace % 4!=0)
+			while((chopPlace % 2) != 0)
 				chopPlace-=1;
 			int avgLength=(genome1.length()+genome2.length())/2;
-			while(avgLength % 4!=0)
+			while((avgLength % 2) != 0)
 				avgLength+=1;
+			
 			if(genome1.length()>0)
 				genome[i]+=genome1.substring(0,chopPlace);
 			if(genome2.length()>0)
 				genome[i]+=genome2.substring(genome2.length()-(avgLength-chopPlace));
-			if((genome[i].length()% 4)!=0)
+			if((genome[i].length() % 2)!=0)
 				System.err.println("Breeding Length error: "+genome[i]+" "+parent1.genome[i]+" "+parent2.genome[i]);
+		}
+		mutate();
+		
+		//This prevents problems with things like 'add the following value' on the end of genomes
+		for(int i=0;i<genomeLength;i++){
+			genome[i]+="00";
 		}
 	}
 	
@@ -88,24 +97,6 @@ class GeneticCode {
 		String genomeString="";
 		for(int i=0;i<genomeLength;i++){
 			genomeString+=genome[i] + ",";
-		}
-		genomeString=genomeString.substring(0,genomeString.length()-2);//strip the trailing ,
-		return genomeString;
-	}
-	
-	/*
-	 * This strips all junk rna before printing whatever remains- this doesn't change the behaviour encoded with the exception of potential mutation effects
-	 */
-	public String toStrippedString(){
-		String genomeString="";
-		for(int i=0;i<genomeLength;i++){
-			String StrippedGene="";
-			for(int j=0;j< genome[i].length();j+=4){
-				int command=Integer.parseInt(genome[i].substring(j,j+2), 16);
-				if (command<EvolveBot.junkThreasholds()[i])
-					StrippedGene+=genome[i].substring(j,j+4);
-			}
-			genomeString+=StrippedGene+",";
 		}
 		genomeString=genomeString.substring(0,genomeString.length()-2);//strip the trailing ,
 		return genomeString;
@@ -146,9 +137,9 @@ class GeneticCode {
 		String javaCode="";
 		String workingValue="0";//reset this each time
 		int loopDepth=0;
-		for(int i=0;i< gene.length();i+=4){
+		for(int i=0;i< gene.length();i+=2){
 			int command=Integer.parseInt(gene.substring(i,i+2), 16);
-			String value=String.valueOf(Integer.parseInt(gene.substring(i+2,i+4), 16));
+			String value;
 			switch(command){
 			case 0:
 				if(loopDepth>0){
@@ -220,30 +211,43 @@ class GeneticCode {
 				javaCode+="setTurnRadarRight("+workingValue+");";
 				break;
 			case 22:
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				i+=2;
 				workingValue+="+"+value;
 				break;
 			case 23:
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				i+=2;
 				workingValue+="-"+value;
 				break;
 			case 24:
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				i+=2;
 				workingValue+="*"+value;
 				break;
 			case 25:
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				i+=2;
 				workingValue+="/"+value;
 				break;
 			case 26:
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				i+=2;
 				workingValue=value;
 				break;
 			case 27:
-				javaCode+="if("+workingValue+">value){";
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				javaCode+="if("+workingValue+">"+value+"){";
 				loopDepth+=1;
 				break;
 			case 28:
-				javaCode+="if("+workingValue+"<value){";
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				javaCode+="if("+workingValue+"<"+value+"){";
 				loopDepth+=1;
 				break;
 			case 29:
-				javaCode+="if("+workingValue+"==value){";
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				javaCode+="if("+workingValue+"=="+value+"){";
 				loopDepth+=1;
 				break;
 			default:
@@ -268,7 +272,7 @@ class GeneticCode {
 	}
 	
 	//Apply genetic mutations to the genome
-	public void mutate(){
+	void mutate(){
 		//TODO: different types of mutation, copying/moving genes from one to another?, swapping the order of genes? 
 		Random generator=new Random();
 		for (int i=0; i<genomeLength;i++){
@@ -327,10 +331,14 @@ class GeneticCode {
 		if(!robotDataDirectory.exists())
 			robotDataDirectory.mkdir();
 		
-		PrintWriter writer = new PrintWriter(robotPath + botName + ".data/geneticcode.rna");
+		PrintWriter rnaWriter = new PrintWriter(robotPath + botName + ".data/geneticcode.rna");
 		for (int i=0; i<genomeLength;i++){
-			writer.println(genome[i]);
+			rnaWriter.println(genome[i]);
 		}
-		writer.close();
+		rnaWriter.close();
+
+		PrintWriter sourceWriter = new PrintWriter(robotPath + botName + ".data/source.java");
+		sourceWriter.println(toJavaCode());
+		sourceWriter.close();
 	}
 }
