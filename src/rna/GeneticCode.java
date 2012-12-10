@@ -21,6 +21,7 @@ class GeneticCode {
 	private static double mutationRate=0.1;
 	private static double mutationMagnitude=100;
 	private static double seedLength=0.995;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
+	private String botName;
 	
 	//This reads an existing genome file
 	public GeneticCode(String botName) throws NumberFormatException, IOException{
@@ -325,20 +326,28 @@ class GeneticCode {
 	}
 	
 	//write this genome to a file so a robot can use it
-	public void commitToRobot(String botName) throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
+	public void commitToRobot(String name) throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
 
-		File robotDataDirectory=new File(robotPath + botName + ".data");
+		botName=name;
+		String shortName=name.substring(name.lastIndexOf('.')+1);//This doesn't have the package prefix
+		
+		File robotDataDirectory=new File(robotPath + shortName + ".data");
 		if(!robotDataDirectory.exists())
 			robotDataDirectory.mkdir();
 		
-		PrintWriter rnaWriter = new PrintWriter(robotPath + botName + ".data/geneticcode.rna");
+		PrintWriter rnaWriter = new PrintWriter(robotPath + shortName + ".data/geneticcode.rna");
 		for (int i=0; i<genomeLength;i++){
 			rnaWriter.println(genome[i]);
 		}
 		rnaWriter.close();
 
-		PrintWriter sourceWriter = new PrintWriter(robotPath + botName + ".data/source.java");
+		PrintWriter sourceWriter = new PrintWriter(robotPath + shortName + ".data/source.java");
 		sourceWriter.println(toJavaCode());
 		sourceWriter.close();
 	}
+	
+	public String getName(){
+		return botName;
+	}
+	
 }
