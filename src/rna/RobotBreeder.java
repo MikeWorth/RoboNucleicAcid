@@ -42,7 +42,6 @@ public class RobotBreeder {
 				//first keep the top 1/2:
 				if (i<botCount/2){
 					newGeneration[i] = rankedBots[i];
-					System.out.println(rankedBots[i].getName());
 				//Kill off the bottom half and replace them with crossbreeds
 				//1/4 from the top 1/4
 				}else if(i< ((botCount*3)/4) ){
