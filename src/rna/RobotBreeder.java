@@ -12,6 +12,7 @@ public class RobotBreeder {
 		String[] manualBotNames={"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck","sample.SpinBot","sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"};		
 		currentGeneration = new GeneticCode[evolveBotNames.length];
 		int botCount=evolveBotNames.length;
+		final int CLOSESTALLOWEDINCEST=3;
 		
 		for(int i=0;i<botCount;i++){
 			currentGeneration[i] = new GeneticCode();
@@ -33,28 +34,21 @@ public class RobotBreeder {
 			String logLine="";
 			logLine += String.valueOf(generation) + ",";
 			logLine += winner.getName() + ",";
+			logLine += '"' + winner.getPersonifiedName() + "\",";
 			logLine += league.getScore(winner) + ",";
 			logLine += league.getAverageScore();
 			log.println(logLine);
 			log.flush();
 			
-			Random generator=new Random();
 			for(int i=0;i<botCount;i++){
-				//first keep the top 1/2:
-				if (i<botCount/2){
-					newGeneration[i] = rankedBots[i];
-				//Kill off the bottom half and replace them with crossbreeds
-				//1/4 from the top 1/4
-				}else if(i< ((botCount*3)/4) ){
-					int rnd1=generator.nextInt(botCount/4);
-					int rnd2=generator.nextInt(botCount/4);
-					newGeneration[i] = new GeneticCode(rankedBots[rnd1],rankedBots[rnd2]);
-				//and the last 1/4 from the top 1/2
-				}else{
-					int rnd1=generator.nextInt(botCount/2);
-					int rnd2=generator.nextInt(botCount/2);
-					newGeneration[i] = new GeneticCode(rankedBots[rnd1],rankedBots[rnd2]);
-				}
+				GeneticCode parent1=getWeightedRandomBot(rankedBots);
+				GeneticCode parent2=getWeightedRandomBot(rankedBots);
+				
+				//improve genetic diversity by prohibiting incest:
+				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage())<CLOSESTALLOWEDINCEST)
+					parent2=getWeightedRandomBot(rankedBots);
+				
+				newGeneration[i] = new GeneticCode(parent1,parent2);
 			}
 
 			//Finally ditch the old generation, replacing it with the current
@@ -65,5 +59,25 @@ public class RobotBreeder {
 			generation++;
 		}
 	}
+	
+	private static GeneticCode getWeightedRandomBot(GeneticCode[] rankedBots){
+		int botCount = rankedBots.length;
+		Random generator=new Random();
+		double smallestProbability= (2.0/(botCount*(botCount+1)));//2 is an int, 2.0 is a double
+		double[] probabilities = new double[botCount]; 
+
+		for(int i=0;i<botCount;i++)
+			probabilities[i]=smallestProbability * (botCount-i);
+		
+		double rnd=generator.nextDouble();
+		double cumulativeProbability=0;
+		for(int i=0;i<botCount;i++){
+			cumulativeProbability+=probabilities[i];
+			if (rnd<cumulativeProbability)
+				return rankedBots[i];
+		}
+		return rankedBots[botCount-1];//the cumulative probability can round to 0.9999999999999999
+	}
+	
 }
 
