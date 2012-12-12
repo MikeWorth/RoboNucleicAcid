@@ -12,7 +12,7 @@ public class RobotBreeder {
 		String[] manualBotNames={"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck","sample.SpinBot","sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"};		
 		currentGeneration = new GeneticCode[evolveBotNames.length];
 		int botCount=evolveBotNames.length;
-		final int CLOSESTALLOWEDINCEST=3;
+		final int CLOSESTALLOWEDINCEST=1;
 		
 		for(int i=0;i<botCount;i++){
 			currentGeneration[i] = new GeneticCode();
@@ -22,6 +22,17 @@ public class RobotBreeder {
 		int generation=1;
 		PrintWriter log = new PrintWriter("RNA log.csv");
 		while(true){
+
+			int leastRelated=0;
+			for(int i=0;i<botCount;i++){
+				for(int j=i;j<botCount;j++){
+					leastRelated=Math.max(leastRelated,Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage()));
+				}
+			}
+			if(leastRelated<CLOSESTALLOWEDINCEST){
+				System.err.println("Population has become too inbred to proceed");
+				break;
+			}
 
 			RobotLeague league=new RobotLeague(currentGeneration, manualBotNames, false);
 			
@@ -44,9 +55,11 @@ public class RobotBreeder {
 				GeneticCode parent1=getWeightedRandomBot(rankedBots);
 				GeneticCode parent2=getWeightedRandomBot(rankedBots);
 				
-				//improve genetic diversity by prohibiting incest:
-				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage())<CLOSESTALLOWEDINCEST)
+				//promote genetic diversity by prohibiting incest:
+				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage())<CLOSESTALLOWEDINCEST){
+					parent1=getWeightedRandomBot(rankedBots);
 					parent2=getWeightedRandomBot(rankedBots);
+				}
 				
 				newGeneration[i] = new GeneticCode(parent1,parent2);
 			}
