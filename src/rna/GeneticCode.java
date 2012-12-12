@@ -164,10 +164,10 @@ class GeneticCode {
 				javaCode+="turnGunRight("+workingValue+");";
 				break;
 			case 6:
-				javaCode+="turnRadarLeft("+workingValue+");";
+				//javaCode+="turnRadarLeft("+workingValue+");";
 				break;
 			case 7:
-				javaCode+="turnRadarRight("+workingValue+");";
+				//javaCode+="turnRadarRight("+workingValue+");";
 				break;
 			case 8:
 				javaCode+="turnLeft("+workingValue+");";
@@ -206,10 +206,10 @@ class GeneticCode {
 				javaCode+="setTurnRight("+workingValue+");";
 				break;
 			case 20:
-				javaCode+="setTurnRadarLeft("+workingValue+");";
+				//javaCode+="setTurnRadarLeft("+workingValue+");";
 				break;
 			case 21:
-				javaCode+="setTurnRadarRight("+workingValue+");";
+				//javaCode+="setTurnRadarRight("+workingValue+");";
 				break;
 			case 22:
 				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
