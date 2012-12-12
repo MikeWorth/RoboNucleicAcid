@@ -8,7 +8,9 @@ import java.util.Random;
 
 /*
  * GeneticCodes are a series of strings detailing actions for each of the possible events
- * Each string breaks down into blocks of 4 characters, this is 2 hexidecimal numbers for the action and the arguement 
+ * Each string breaks down into blocks of 2 characters, this is a hexidecimal value for an
+ * instruction. Sometimes the instruction refers to the following 2 characters, in this case
+ * they are not also an instruction. 
  */
 class GeneticCode {
 
@@ -288,8 +290,8 @@ class GeneticCode {
 						if(base.length()==1)base="0"+base;
 					}else if(mutationType<0.5){//TODO:tweak probabilities?
 						//Add a gene, potential to misalign operations/arguements is intentional
-						String newBase=Integer.toHexString(generator.nextInt(65536));
-						while(newBase.length()<4){
+						String newBase=Integer.toHexString(generator.nextInt(256));
+						while(newBase.length()<2){
 							newBase="0"+newBase;
 						}
 						base+=newBase;
@@ -298,22 +300,19 @@ class GeneticCode {
 						base="";
 					}
 				}
-				if(base.length()!=2&&base.length()!=6&&base.length()!=0) System.err.println("Baselength wrong:"+base+":"+Integer.valueOf(oldBaseVal)+":"+Integer.valueOf(newBaseVal));
+				if(base.length()!=2&&base.length()!=4&&base.length()!=0) System.err.println("Baselength wrong:"+base+":"+Integer.valueOf(oldBaseVal)+":"+Integer.valueOf(newBaseVal));
 				mutatedGene+=base;
 			}
 			//Even if the genome is empty, we could add one to the end
 			if(generator.nextDouble()<mutationRate){
-				String newBase=Integer.toHexString(generator.nextInt(65536));
-				while(newBase.length()<4){
+				String newBase=Integer.toHexString(generator.nextInt(256));
+				while(newBase.length()<2){
 					newBase="0"+newBase;
 				}
 				mutatedGene+=newBase;				
 			}
 
-			//If the length is off, we've deleted one of a pair of genes; delete one off the front
-			if((mutatedGene.length()% 4)!=0)mutatedGene=mutatedGene.substring(2);
-
-			if((mutatedGene.length()% 4)!=0)System.err.println("Mutated Length error: "+genome[i]+" "+mutatedGene);
+			if((mutatedGene.length()% 2)!=0)System.err.println("Mutated Length error: "+genome[i]+" "+mutatedGene);
 			genome[i]=mutatedGene;
 		}
 	}
