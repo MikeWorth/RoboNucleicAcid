@@ -99,7 +99,10 @@ class GeneticCode {
 	}
 	
 	public String toJavaCode(){
-		String javaCode="	public void run() {";
+		String javaCode="package rna;" +
+				"import robocode.*;" +
+				"public class " + getLineage().getLongName(true) + " extends AdvancedRobot{" +
+						"public void run() {";
 		String[] eventValues={};
 		javaCode+=GeneToJava(genome[0], eventValues);
 		javaCode+="while(true){";
@@ -125,7 +128,7 @@ class GeneticCode {
 		javaCode+="}public void onBulletMissed(BulletMissedEvent e) {";
 		String[] eventValues8={};
 		javaCode+=GeneToJava(genome[8], eventValues8);
-		javaCode+="}";
+		javaCode+="}}";
 		return javaCode;
 	}
 	

@@ -52,22 +52,36 @@ public class Lineage {
 		ancestors.add(parent2);
 	}
 	
-	public String getLongName(){
-		
+	public String getLongName(boolean camelCase){
+
+		String sonOf=", son of ";
+		String grandsonOf=", grandson of ";
+		if (camelCase){
+			sonOf="SonOf";
+			grandsonOf="GrandsonOf";
+		}
+
+
 		String longName=name;
-		
+
 		Lineage father;
 		Lineage grandFather;
 		if(ancestors.size()>=1){
 			father=ancestors.get(0);
-			longName+=", son of "+ father.name;
+			longName+= sonOf + father.name;
 			if(father.ancestors.size()>=1){
 				grandFather=father.ancestors.get(0);
-				longName+=", grandson of "+ grandFather.name;
+				longName+=grandsonOf+ grandFather.name;
 			}
 		}
-		
+
 		return longName;
+
+	}
+
+	
+	public String getLongName(){
+		return getLongName(false);
 	}
 	
 	private static String randomName(){
