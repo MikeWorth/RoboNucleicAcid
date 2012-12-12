@@ -61,7 +61,7 @@ class ScoreKeeper extends BattleAdaptor {
 	
 	public int getScorePercentage(GeneticCode bot){
 		for(int i=0;i<botCount;i++){
-			if(scores.get(i).getName()==bot.getName())
+			if(scores.get(i).getName()==bot.getName())//This reference match check is ok, all names are created at compile time from the evolveBotNames array
 				return scores.get(i).getScorePercentage();
 		}
 		System.err.println("Score not found:"+bot.getName());

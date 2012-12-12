@@ -9,7 +9,8 @@ public class RobotBreeder {
 		
 		GeneticCode[] currentGeneration;
 		String[] evolveBotNames={"rna.EB1","rna.EB2","rna.EB3","rna.EB4","rna.EB5","rna.EB6","rna.EB7","rna.EB8","rna.EB9","rna.EB10","rna.EB11","rna.EB12","rna.EB13","rna.EB14","rna.EB15","rna.EB16"};
-		String[] manualBotNames={"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck","sample.SpinBot","sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"};		currentGeneration = new GeneticCode[evolveBotNames.length];
+		String[] manualBotNames={"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck","sample.SpinBot","sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"};		
+		currentGeneration = new GeneticCode[evolveBotNames.length];
 		int botCount=evolveBotNames.length;
 		
 		for(int i=0;i<botCount;i++){
@@ -27,7 +28,7 @@ public class RobotBreeder {
 			
 			GeneticCode[] newGeneration = new GeneticCode[botCount];
 			GeneticCode winner=rankedBots[0];
-			System.out.println(winner.getName()+" wins generation " + String.valueOf(generation) + "!");
+			System.out.println(winner.getName() + "(" + winner.getPersonifiedName() + ") wins generation " + String.valueOf(generation) + "!");
 
 			String logLine="";
 			logLine += String.valueOf(generation) + ",";

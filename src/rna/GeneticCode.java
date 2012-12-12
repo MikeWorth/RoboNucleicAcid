@@ -1,10 +1,7 @@
 package rna;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Random;
@@ -22,26 +19,16 @@ class GeneticCode {
 	private static double mutationMagnitude=100;
 	private static double seedLength=0.995;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
 	private String botName;
+	private Lineage lineage;
 	
-	//This reads an existing genome file
-	public GeneticCode(String botName) throws NumberFormatException, IOException{
-		genome = new String[genomeLength];
-		FileReader rnaFile = new FileReader(robotPath + botName + ".data/geneticcode.rna");
-		BufferedReader br = new BufferedReader(rnaFile);
-		int i = 0;
-		String line;
-		while ((line = br.readLine())!= null){
-			genome[i]=line;
-			i++;
-		}
-	}
 	//This creates a random seed genome
 	public GeneticCode(){
+		lineage=new Lineage();
 		genome = new String[genomeLength];
 		Random generator=new Random();
 		for(int i=0;i<genomeLength;i++){
 			genome[i]="";
-			while(generator.nextDouble()<seedLength){//TODO: reweight this chance?
+			while(generator.nextDouble()<seedLength){
 				for(int j=0;j<4;j++){
 					String gene=Integer.toString(generator.nextInt(16),16);
 					genome[i]+=gene;
@@ -50,8 +37,13 @@ class GeneticCode {
 			if((genome[i].length() % 4)!=0)System.err.println("Length error: "+genome[i]);
 		}
 	}
-	//This breeds a new genome from 2 parents TODO:stop this causing continually growing genomes?
+
+	//This breeds a new genome from 2 parents 
 	public GeneticCode(GeneticCode parent1,GeneticCode parent2){
+		
+		//We can only provide one lineage; pick the first for no particular reason
+		lineage=new Lineage(parent1.getLineage(),parent2.getLineage());
+		
 		genome = new String[genomeLength];
 		Random generator=new Random();
 
@@ -90,6 +82,7 @@ class GeneticCode {
 		
 		//This prevents problems with things like 'add the following value' on the end of genomes
 		for(int i=0;i<genomeLength;i++){
+			if (genome[i].substring(genome[i].length()-2,genome[i].length())!="00")
 			genome[i]+="00";
 		}
 	}
@@ -336,6 +329,9 @@ class GeneticCode {
 			robotDataDirectory.mkdir();
 		
 		PrintWriter rnaWriter = new PrintWriter(robotPath + shortName + ".data/geneticcode.rna");
+		
+		rnaWriter.println(getPersonifiedName());
+		
 		for (int i=0; i<genomeLength;i++){
 			rnaWriter.println(genome[i]);
 		}
@@ -349,5 +345,10 @@ class GeneticCode {
 	public String getName(){
 		return botName;
 	}
-	
+	public Lineage getLineage(){
+		return lineage;
+	}
+	public String getPersonifiedName(){
+		return lineage.getLongName();
+	}
 }

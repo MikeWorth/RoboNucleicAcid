@@ -62,10 +62,10 @@ public class EvolveBot extends AdvancedRobot
 					turnGunRight(workingValue);
 					break;
 				case 6:
-					turnRadarLeft(workingValue);
+					//turnRadarLeft(workingValue);
 					break;
 				case 7:
-					turnRadarRight(workingValue);
+					//turnRadarRight(workingValue);
 					break;
 				case 8:
 					turnLeft(workingValue);
@@ -104,10 +104,10 @@ public class EvolveBot extends AdvancedRobot
 					setTurnRight(workingValue);
 					break;
 				case 20:
-					setTurnRadarLeft(workingValue);
+					//setTurnRadarLeft(workingValue);
 					break;
 				case 21:
-					setTurnRadarRight(workingValue);
+					//setTurnRadarRight(workingValue);
 					break;
 				case 22:
 					workingValue+=gene[i++];
@@ -159,7 +159,7 @@ public class EvolveBot extends AdvancedRobot
 	public void run() {
 
 	//Load the genome for this bot and split it into sections for the different possible events
-	FileReader rnaFile = null;
+		FileReader rnaFile = null;
 		try {
 			rnaFile = new FileReader(getDataFile("geneticcode.rna"));
 		} catch (FileNotFoundException e) {
@@ -168,6 +168,11 @@ public class EvolveBot extends AdvancedRobot
 		}
 		BufferedReader br = new BufferedReader(rnaFile);
 		try {
+			
+			String personifiedName=br.readLine();
+			String battleCry="Quake in your boots for I am " + personifiedName + " and I shall destroy you (or just ignore you while driving repeatedly into a wall)";
+			System.out.println(battleCry);//this goes to the robot console
+			
 			//This is where we use the geneticcode data to set the behaviour
 			for(int i=0;i<numberOfGenes;i++){
 				String geneString=br.readLine();
