@@ -84,9 +84,11 @@ class GeneticCode {
 		
 		//This prevents problems with things like 'add the following value' on the end of genomes
 		for(int i=0;i<genomeLength;i++){
-			if (genome[i].substring(genome[i].length()-2,genome[i].length())!="00")
-			genome[i]+="00";
+			if (genome[i].length()>0)
+				if (genome[i].substring(genome[i].length()-2,genome[i].length())!="00")
+					genome[i]+="00";
 		}
+
 	}
 	
 	public String toString(){
