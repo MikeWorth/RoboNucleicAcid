@@ -12,7 +12,7 @@ public class Lineage {
 	
 	private List<Lineage> ancestors=new ArrayList<Lineage>();
 	private String name;
-	private static final int MAXIMUMCOUSINALITYDEPTH=2;//this is the deepest a cousinality search will go, it is the value that is returned if no match is found
+	private static final int MAXIMUMCOUSINALITYDEPTH=4;//this is the deepest a cousinality search will go, it is the value that is returned if no match is found
 	
 	private static String[] names() {
 		FileReader nameFile=null;

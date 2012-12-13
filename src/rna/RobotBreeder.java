@@ -7,14 +7,20 @@ public class RobotBreeder {
 	
 	public static void main(String[] args) throws IOException{
 		
-		GeneticCode[] currentGeneration;
-		String[] evolveBotNames={"rna.EB1","rna.EB2","rna.EB3","rna.EB4","rna.EB5","rna.EB6","rna.EB7","rna.EB8","rna.EB9","rna.EB10","rna.EB11","rna.EB12","rna.EB13","rna.EB14","rna.EB15","rna.EB16"};
-		String[] manualBotNames={"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck","sample.SpinBot","sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"};		
-		currentGeneration = new GeneticCode[evolveBotNames.length];
-		int botCount=evolveBotNames.length;
-		final int CLOSESTALLOWEDINCEST=1;
+		final int BOTCOUNT=50;//Don't make this larger than 50 without making more EB*.class
 		
-		for(int i=0;i<botCount;i++){
+		String[] evolveBotNames=new String[BOTCOUNT];
+		for(int i=0;i<BOTCOUNT;i++){
+			evolveBotNames[i]="rna.EB"+String.valueOf(i);
+		}
+
+		
+		GeneticCode[] currentGeneration;
+		String[] manualBotNames={/*"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck",*/"sample.SpinBot"/*,"sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"*/};		
+		currentGeneration = new GeneticCode[evolveBotNames.length];
+		final int CLOSESTALLOWEDINCEST=3;
+		
+		for(int i=0;i<BOTCOUNT;i++){
 			currentGeneration[i] = new GeneticCode();
 			currentGeneration[i].commitToRobot(evolveBotNames[i]);
 		}
@@ -24,8 +30,8 @@ public class RobotBreeder {
 		while(true){
 
 			int leastRelated=0;
-			for(int i=0;i<botCount;i++){
-				for(int j=i;j<botCount;j++){
+			for(int i=0;i<BOTCOUNT;i++){
+				for(int j=i;j<BOTCOUNT;j++){
 					leastRelated=Math.max(leastRelated,Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage()));
 				}
 			}
@@ -38,7 +44,7 @@ public class RobotBreeder {
 			
 			GeneticCode[] rankedBots=league.getChallengersInOrder();
 			
-			GeneticCode[] newGeneration = new GeneticCode[botCount];
+			GeneticCode[] newGeneration = new GeneticCode[BOTCOUNT];
 			GeneticCode winner=rankedBots[0];
 			System.out.println(winner.getName() + "(" + winner.getPersonifiedName() + ") wins generation " + String.valueOf(generation) + "!");
 
@@ -51,7 +57,7 @@ public class RobotBreeder {
 			log.println(logLine);
 			log.flush();
 			
-			for(int i=0;i<botCount;i++){
+			for(int i=0;i<BOTCOUNT;i++){
 				GeneticCode parent1=getWeightedRandomBot(rankedBots);
 				GeneticCode parent2=getWeightedRandomBot(rankedBots);
 				
@@ -66,7 +72,7 @@ public class RobotBreeder {
 
 			//Finally ditch the old generation, replacing it with the current
 			currentGeneration=newGeneration;
-			for(int i=0;i<botCount;i++){
+			for(int i=0;i<BOTCOUNT;i++){
 				currentGeneration[i].commitToRobot(evolveBotNames[i]);
 			}
 			generation++;
