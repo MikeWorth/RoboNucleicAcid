@@ -70,6 +70,8 @@ public class RobotBreeder {
 				newGeneration[i] = new GeneticCode(parent1,parent2);
 			}
 
+			rankedBots[0].commitToRobot("EvolveBot");//put the winner here for external viewing
+			
 			//Finally ditch the old generation, replacing it with the current
 			currentGeneration=newGeneration;
 			for(int i=0;i<BOTCOUNT;i++){
@@ -80,22 +82,25 @@ public class RobotBreeder {
 	}
 	
 	private static GeneticCode getWeightedRandomBot(GeneticCode[] rankedBots){
-		int botCount = rankedBots.length;
+		int botCount = rankedBots.length;//This shouldn't vary from the main botCount, but I'd rather not constrain it in case things change later
 		Random generator=new Random();
-		double smallestProbability= (2.0/(botCount*(botCount+1)));//2 is an int, 2.0 is a double
-		double[] probabilities = new double[botCount]; 
-
-		for(int i=0;i<botCount;i++)
-			probabilities[i]=smallestProbability * (botCount-i);
 		
-		double rnd=generator.nextDouble();
-		double cumulativeProbability=0;
+		int cumulativeProbabilities[]=new int[botCount];
+		int runningTotal=0;
 		for(int i=0;i<botCount;i++){
-			cumulativeProbability+=probabilities[i];
-			if (rnd<cumulativeProbability)
+			int points=(botCount-i);
+			cumulativeProbabilities[i]=runningTotal;
+			cumulativeProbabilities[i]+=Math.pow(points,2);//This line can be changed to reweight probabilities without affecting anything else
+			runningTotal=cumulativeProbabilities[i];
+		}
+		
+		double rnd=generator.nextInt(runningTotal);
+		for(int i=0;i<botCount;i++){
+			if (rnd<=cumulativeProbabilities[i])
 				return rankedBots[i];
 		}
-		return rankedBots[botCount-1];//the cumulative probability can round to 0.9999999999999999
+		
+		return rankedBots[0];
 	}
 	
 }
