@@ -18,7 +18,7 @@ public class RobotBreeder {
 		GeneticCode[] currentGeneration;
 		String[] manualBotNames={/*"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck",*/"sample.SpinBot"/*,"sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"*/};		
 		currentGeneration = new GeneticCode[evolveBotNames.length];
-		final int CLOSESTALLOWEDINCEST=3;
+		final int CLOSESTALLOWEDINCEST=2;
 		
 		for(int i=0;i<BOTCOUNT;i++){
 			currentGeneration[i] = new GeneticCode();
@@ -32,7 +32,7 @@ public class RobotBreeder {
 			int leastRelated=0;
 			for(int i=0;i<BOTCOUNT;i++){
 				for(int j=i;j<BOTCOUNT;j++){
-					leastRelated=Math.max(leastRelated,Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage()));
+					leastRelated=Math.max(leastRelated,Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),CLOSESTALLOWEDINCEST+1));
 				}
 			}
 			if(leastRelated<CLOSESTALLOWEDINCEST){
@@ -62,7 +62,7 @@ public class RobotBreeder {
 				GeneticCode parent2=getWeightedRandomBot(rankedBots);
 				
 				//promote genetic diversity by prohibiting incest:
-				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage())<CLOSESTALLOWEDINCEST){
+				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage(),CLOSESTALLOWEDINCEST+1)<CLOSESTALLOWEDINCEST){
 					parent1=getWeightedRandomBot(rankedBots);
 					parent2=getWeightedRandomBot(rankedBots);
 				}
@@ -71,6 +71,10 @@ public class RobotBreeder {
 			}
 
 			rankedBots[0].commitToRobot("EvolveBot");//put the winner here for external viewing
+			String genString=String.valueOf(generation);
+			while(genString.length()<4)
+				genString="0"+genString;
+			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
 			
 			//Finally ditch the old generation, replacing it with the current
 			currentGeneration=newGeneration;

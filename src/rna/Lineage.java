@@ -12,7 +12,6 @@ public class Lineage {
 	
 	private List<Lineage> ancestors=new ArrayList<Lineage>();
 	private String name;
-	private static final int MAXIMUMCOUSINALITYDEPTH=4;//this is the deepest a cousinality search will go, it is the value that is returned if no match is found
 	
 	private static String[] names() {
 		FileReader nameFile=null;
@@ -60,19 +59,19 @@ public class Lineage {
 	 * 
 	 * This defines what people would consider half siblings as cousins, with similar for other 'half' relationships
 	 */
-	public static int getCousinality(Lineage line1,Lineage line2,int currentDepth){
+	private static int getCousinality(Lineage line1,Lineage line2,int maxDepth,int currentDepth){
 		
-		if(currentDepth==MAXIMUMCOUSINALITYDEPTH)
-			return MAXIMUMCOUSINALITYDEPTH;
+		if(currentDepth==maxDepth)
+			return maxDepth;
 		
 		if(line1.ancestors.size()==0)//they are from the same generation, don't need to check the other one
-			return MAXIMUMCOUSINALITYDEPTH;
+			return maxDepth;
 		
 		if (line1.ancestors.get(0)==line2.ancestors.get(0) && line1.ancestors.get(1)==line2.ancestors.get(1)){
 			return 0;
 		}else{
 			
-			int closestRelationship=MAXIMUMCOUSINALITYDEPTH;
+			int closestRelationship=maxDepth;
 			for(int i=0;i<2;i++){
 				for(int j=0;j<2;j++){
 					closestRelationship=Math.min(closestRelationship ,getCousinality(line1.ancestors.get(i), line2.ancestors.get(j),currentDepth+1));
@@ -81,8 +80,8 @@ public class Lineage {
 			return closestRelationship + 1; 
 		}
 	}
-	public static int getCousinality(Lineage line1,Lineage line2){
-		return getCousinality( line1, line2,0);
+	public static int getCousinality(Lineage line1,Lineage line2,int maxDepth){
+		return getCousinality( line1, line2,maxDepth,0);
 	}
 	
 	public String getLongName(boolean camelCase){
