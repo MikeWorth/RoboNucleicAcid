@@ -64,7 +64,7 @@ public class Lineage {
 		if(currentDepth==maxDepth)
 			return maxDepth;
 		
-		if(line1.ancestors.size()==0)//they are from the same generation, don't need to check the other one
+		if(line1.ancestors.size()==0 || line2.ancestors.size()==0)
 			return maxDepth;
 		
 		if (line1.ancestors.get(0)==line2.ancestors.get(0) && line1.ancestors.get(1)==line2.ancestors.get(1)){
@@ -74,7 +74,7 @@ public class Lineage {
 			int closestRelationship=maxDepth;
 			for(int i=0;i<2;i++){
 				for(int j=0;j<2;j++){
-					closestRelationship=Math.min(closestRelationship ,getCousinality(line1.ancestors.get(i), line2.ancestors.get(j),currentDepth+1));
+					closestRelationship=Math.min(closestRelationship ,getCousinality(line1.ancestors.get(i), line2.ancestors.get(j),maxDepth,currentDepth+1));
 				}
 			}
 			return closestRelationship + 1; 

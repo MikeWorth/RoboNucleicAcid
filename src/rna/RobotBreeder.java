@@ -16,7 +16,20 @@ public class RobotBreeder {
 
 		
 		GeneticCode[] currentGeneration;
-		String[] manualBotNames={/*"sample.Corners","sample.Crazy","sample.Fire","sample.MyFirstJuniorRobot","sample.MyFirstRobot","sample.RamFire","sample.SittingDuck",*/"sample.SpinBot"/*,"sample.Target","sample.Tracker","sample.Trackfire","sample.Walls"*/};		
+		String[] manualBotNames={
+				"sample.Corners",
+/*				"sample.Crazy",
+				"sample.Fire",
+				"sample.MyFirstJuniorRobot",
+				"sample.MyFirstRobot",
+				"sample.RamFire",
+				"sample.SittingDuck",
+				"sample.SpinBot",
+				"sample.Target",
+				"sample.Tracker",
+				"sample.Trackfire",
+				"sample.Walls"
+*/		};		
 		currentGeneration = new GeneticCode[evolveBotNames.length];
 		final int CLOSESTALLOWEDINCEST=2;
 		
@@ -28,17 +41,6 @@ public class RobotBreeder {
 		int generation=1;
 		PrintWriter log = new PrintWriter("RNA log.csv");
 		while(true){
-
-			int leastRelated=0;
-			for(int i=0;i<BOTCOUNT;i++){
-				for(int j=i;j<BOTCOUNT;j++){
-					leastRelated=Math.max(leastRelated,Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),CLOSESTALLOWEDINCEST+1));
-				}
-			}
-			if(leastRelated<CLOSESTALLOWEDINCEST){
-				System.err.println("Population has become too inbred to proceed");
-				break;
-			}
 
 			RobotLeague league=new RobotLeague(currentGeneration, manualBotNames, false);
 			
@@ -57,6 +59,24 @@ public class RobotBreeder {
 			log.println(logLine);
 			log.flush();
 			
+			rankedBots[0].commitToRobot("EvolveBot");//put the winner here for external viewing
+			String genString=String.valueOf(generation);
+			while(genString.length()<4)
+				genString="0"+genString;
+			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
+			int leastRelated=0;
+			
+			for(int i=0;i<BOTCOUNT;i++){
+				for(int j=i;j<BOTCOUNT;j++){
+					leastRelated=Math.max(leastRelated,Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),CLOSESTALLOWEDINCEST+1));
+				}
+			}
+			if(leastRelated<CLOSESTALLOWEDINCEST){
+				System.err.println("Population has become too inbred to proceed, replacing bottom 10% with random bots");
+				for (int i=(BOTCOUNT*9)/10;i<BOTCOUNT;i++)
+					rankedBots[i]=new GeneticCode();
+			}
+			
 			for(int i=0;i<BOTCOUNT;i++){
 				GeneticCode parent1=getWeightedRandomBot(rankedBots);
 				GeneticCode parent2=getWeightedRandomBot(rankedBots);
@@ -70,11 +90,6 @@ public class RobotBreeder {
 				newGeneration[i] = new GeneticCode(parent1,parent2);
 			}
 
-			rankedBots[0].commitToRobot("EvolveBot");//put the winner here for external viewing
-			String genString=String.valueOf(generation);
-			while(genString.length()<4)
-				genString="0"+genString;
-			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
 			
 			//Finally ditch the old generation, replacing it with the current
 			currentGeneration=newGeneration;
@@ -94,7 +109,7 @@ public class RobotBreeder {
 		for(int i=0;i<botCount;i++){
 			int points=(botCount-i);
 			cumulativeProbabilities[i]=runningTotal;
-			cumulativeProbabilities[i]+=Math.pow(points,2);//This line can be changed to reweight probabilities without affecting anything else
+			cumulativeProbabilities[i]+=Math.pow(points,3);//This line can be changed to reweight probabilities without affecting anything else
 			runningTotal=cumulativeProbabilities[i];
 		}
 		
