@@ -84,9 +84,12 @@ class GeneticCode {
 		
 		//This prevents problems with things like 'add the following value' on the end of genomes
 		for(int i=0;i<genomeLength;i++){
-			if (genome[i].length()>0)
-				if (genome[i].substring(genome[i].length()-2,genome[i].length())!="00")
+			if (genome[i].length()>0){
+				String lastByte=genome[i].substring(genome[i].length()-2,genome[i].length());
+				int lastVal=Integer.parseInt(lastByte, 16);
+				if (GeneticCode.expectsFollowingValue(lastVal))
 					genome[i]+="00";
+			}
 		}
 
 	}
@@ -140,7 +143,11 @@ class GeneticCode {
 		int loopDepth=0;
 		for(int i=0;i< gene.length();i+=2){
 			int command=Integer.parseInt(gene.substring(i,i+2), 16);
-			String value;
+			String value="";
+			if (GeneticCode.expectsFollowingValue(command)){
+				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
+				i+=2;				
+			}
 			switch(command){
 			case 0:
 				if(loopDepth>0){
@@ -212,42 +219,29 @@ class GeneticCode {
 				//javaCode+="setTurnRadarRight("+workingValue+");";
 				break;
 			case 22:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
-				i+=2;
 				workingValue+="+"+value;
 				break;
 			case 23:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
-				i+=2;
 				workingValue+="-"+value;
 				break;
 			case 24:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
-				i+=2;
 				workingValue+="*"+value;
 				break;
 			case 25:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
-				i+=2;
 				workingValue+="/"+value;
 				break;
 			case 26:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
-				i+=2;
 				workingValue=value;
 				break;
 			case 27:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
 				javaCode+="if("+workingValue+">"+value+"){";
 				loopDepth+=1;
 				break;
 			case 28:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
 				javaCode+="if("+workingValue+"<"+value+"){";
 				loopDepth+=1;
 				break;
 			case 29:
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
 				javaCode+="if("+workingValue+"=="+value+"){";
 				loopDepth+=1;
 				break;
@@ -354,5 +348,18 @@ class GeneticCode {
 	}
 	public String getPersonifiedName(){
 		return lineage.getLongName();
+	}
+	
+	private static boolean expectsFollowingValue(int instruction){
+		return (
+				(instruction==22) ||
+				(instruction==23) ||
+				(instruction==24) ||
+				(instruction==25) ||
+				(instruction==26) ||	
+				(instruction==27) ||	
+				(instruction==28) ||	
+				(instruction==29) ||	
+		false);//false is here to make above lines all end with ||
 	}
 }
