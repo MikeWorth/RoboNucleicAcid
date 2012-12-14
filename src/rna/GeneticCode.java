@@ -17,8 +17,8 @@ class GeneticCode {
 	private static String robotPath="/home/mike/workspace/RoboNucleicAcid/bin/rna/";
 	private static int genomeLength = EvolveBot.numberOfGenes;
 	private String[] genome;
-	private static double mutationRate=0.1;
-	private static double mutationMagnitude=100;
+	private static double mutationRate=0.001;
+	private static double mutationMagnitude=20;
 	private static double seedLength=0.995;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
 	private String botName;
 	private Lineage lineage;
@@ -286,14 +286,14 @@ class GeneticCode {
 				if(generator.nextDouble()<mutationRate){
 
 					double mutationType=generator.nextDouble();
-					if(mutationType<0.25){//TODO:tweak probabilities?
-						//Change the value of a gene (either half)
+					if(mutationType<0.5){//TODO:tweak probabilities?
+						//Change the value of a gene
 						newBaseVal= oldBaseVal + (int)(generator.nextGaussian()*mutationMagnitude);
 						while (newBaseVal>255)newBaseVal-=256;//a gaussian has a very small but finite chance of being bloody miles away from 0
 						while (newBaseVal<0)newBaseVal+=256;
 						base=Integer.toHexString(newBaseVal);
 						if(base.length()==1)base="0"+base;
-					}else if(mutationType<0.5){//TODO:tweak probabilities?
+					}else if(mutationType<0.75){//TODO:tweak probabilities?
 						//Add a gene, potential to misalign operations/arguements is intentional
 						String newBase=Integer.toHexString(generator.nextInt(256));
 						while(newBase.length()<2){
@@ -301,7 +301,7 @@ class GeneticCode {
 						}
 						base+=newBase;
 					}else{
-						//Remove a gene (extra single genes on the end get ignored)
+						//Remove a gene
 						base="";
 					}
 				}
