@@ -8,6 +8,7 @@ public class RobotBreeder {
 	public static void main(String[] args) throws IOException{
 		
 		final int BOTCOUNT=50;//Don't make this larger than 50 without making more EB*.class
+		final int CLOSESTALLOWEDINCEST=2;
 		
 		String[] evolveBotNames=new String[BOTCOUNT];
 		for(int i=0;i<BOTCOUNT;i++){
@@ -17,21 +18,20 @@ public class RobotBreeder {
 		
 		GeneticCode[] currentGeneration;
 		String[] manualBotNames={
-				"sample.Corners",
-/*				"sample.Crazy",
+/*				"sample.Corners",
+				"sample.Crazy",
 				"sample.Fire",
 				"sample.MyFirstJuniorRobot",
 				"sample.MyFirstRobot",
 				"sample.RamFire",
-				"sample.SittingDuck",
-				"sample.SpinBot",
+				"sample.SittingDuck",*/
+				"sample.SpinBot"/*,
 				"sample.Target",
 				"sample.Tracker",
 				"sample.Trackfire",
 				"sample.Walls"
 */		};		
 		currentGeneration = new GeneticCode[evolveBotNames.length];
-		final int CLOSESTALLOWEDINCEST=2;
 		
 		for(int i=0;i<BOTCOUNT;i++){
 			currentGeneration[i] = new GeneticCode();
@@ -40,7 +40,11 @@ public class RobotBreeder {
 		
 		int generation=1;
 		PrintWriter log = new PrintWriter("RNA log.csv");
+		
+		
 		while(true){
+			
+			double generationStartTime=System.currentTimeMillis();
 
 			RobotLeague league=new RobotLeague(currentGeneration, manualBotNames, false);
 			
@@ -49,13 +53,40 @@ public class RobotBreeder {
 			GeneticCode[] newGeneration = new GeneticCode[BOTCOUNT];
 			GeneticCode winner=rankedBots[0];
 			System.out.println(winner.getName() + "(" + winner.getPersonifiedName() + ") wins generation " + String.valueOf(generation) + "!");
+			double generationTime=System.currentTimeMillis() - generationStartTime;
+			
+			int leastRelated=0;
+			double generationCousinality=0;
+			double IncestStartTime=System.currentTimeMillis();
+			int averageDenominator=BOTCOUNT*(BOTCOUNT-1)/2;
+			int averageDenominatorcheck=0;
+			for(int i=0;i<BOTCOUNT;i++){
+				for(int j=i+1;j<BOTCOUNT;j++){
+					averageDenominatorcheck++;
+					int cousinality=Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),10);//TODO: how deep to search? A long term limit exists, calculate that? log2(BOTCOUNT) round up
+					if(cousinality>10)
+						System.err.println("WTF? "+String.valueOf(cousinality));
+					generationCousinality+= ((double) cousinality)/averageDenominator;
+					leastRelated=Math.max(leastRelated,cousinality);
+				}
+			}
+			if (averageDenominator!=averageDenominatorcheck)
+				System.err.println("Denominator fuckup"+String.valueOf(averageDenominator)+" "+String.valueOf(averageDenominatorcheck));
+			System.out.println("Incest check ended after "+String.valueOf(System.currentTimeMillis() - IncestStartTime)+"ms");
+			if(leastRelated<CLOSESTALLOWEDINCEST){
+				System.err.println("Population has become too inbred to proceed, replacing bottom 10% with random bots");
+				for (int i=(BOTCOUNT*9)/10;i<BOTCOUNT;i++)
+					rankedBots[i]=new GeneticCode();
+			}
 
 			String logLine="";
 			logLine += String.valueOf(generation) + ",";
 			logLine += winner.getName() + ",";
 			logLine += '"' + winner.getPersonifiedName() + "\",";
 			logLine += league.getScore(winner) + ",";
-			logLine += league.getAverageScore();
+			logLine += league.getAverageScore() + ",";
+			logLine += String.valueOf(generationCousinality) + ",";
+			logLine += String.valueOf(generationTime);
 			log.println(logLine);
 			log.flush();
 			
@@ -64,25 +95,14 @@ public class RobotBreeder {
 			while(genString.length()<4)
 				genString="0"+genString;
 			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
-			int leastRelated=0;
-			
-			for(int i=0;i<BOTCOUNT;i++){
-				for(int j=i;j<BOTCOUNT;j++){
-					leastRelated=Math.max(leastRelated,Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),CLOSESTALLOWEDINCEST+1));
-				}
-			}
-			if(leastRelated<CLOSESTALLOWEDINCEST){
-				System.err.println("Population has become too inbred to proceed, replacing bottom 10% with random bots");
-				for (int i=(BOTCOUNT*9)/10;i<BOTCOUNT;i++)
-					rankedBots[i]=new GeneticCode();
-			}
-			
+
 			for(int i=0;i<BOTCOUNT;i++){
 				GeneticCode parent1=getWeightedRandomBot(rankedBots);
 				GeneticCode parent2=getWeightedRandomBot(rankedBots);
 				
 				//promote genetic diversity by prohibiting incest:
 				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage(),CLOSESTALLOWEDINCEST+1)<CLOSESTALLOWEDINCEST){
+					System.out.println("Incest prevented while parenting new bot "+String.valueOf(i));
 					parent1=getWeightedRandomBot(rankedBots);
 					parent2=getWeightedRandomBot(rankedBots);
 				}

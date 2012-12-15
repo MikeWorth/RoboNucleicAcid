@@ -19,7 +19,7 @@ class GeneticCode {
 	private String[] genome;
 	private static double mutationRate=0.001;
 	private static double mutationMagnitude=20;
-	private static double seedLength=0.995;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
+	private static double seedLength=0.999;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
 	private String botName;
 	private Lineage lineage;
 	
