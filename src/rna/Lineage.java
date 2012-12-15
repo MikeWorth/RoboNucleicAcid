@@ -61,7 +61,7 @@ public class Lineage {
 	 */
 	private static int getCousinality(Lineage line1,Lineage line2,int maxDepth,int currentDepth){
 		
-		if(currentDepth==maxDepth)
+		if(currentDepth==maxDepth-1)
 			return maxDepth;
 		
 		if(line1.ancestors.size()==0 || line2.ancestors.size()==0)
@@ -71,7 +71,7 @@ public class Lineage {
 			return 0;
 		}else{
 			
-			int closestRelationship=maxDepth;
+			int closestRelationship=maxDepth-1;
 			for(int i=0;i<2;i++){
 				for(int j=0;j<2;j++){
 					closestRelationship=Math.min(closestRelationship ,getCousinality(line1.ancestors.get(i), line2.ancestors.get(j),maxDepth,currentDepth+1));
