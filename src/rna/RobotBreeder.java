@@ -59,19 +59,13 @@ public class RobotBreeder {
 			double generationCousinality=0;
 			double IncestStartTime=System.currentTimeMillis();
 			int averageDenominator=BOTCOUNT*(BOTCOUNT-1)/2;
-			int averageDenominatorcheck=0;
 			for(int i=0;i<BOTCOUNT;i++){
 				for(int j=i+1;j<BOTCOUNT;j++){
-					averageDenominatorcheck++;
 					int cousinality=Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),10);//TODO: how deep to search? A long term limit exists, calculate that? log2(BOTCOUNT) round up
-					if(cousinality>10)
-						System.err.println("WTF? "+String.valueOf(cousinality));
 					generationCousinality+= ((double) cousinality)/averageDenominator;
 					leastRelated=Math.max(leastRelated,cousinality);
 				}
 			}
-			if (averageDenominator!=averageDenominatorcheck)
-				System.err.println("Denominator fuckup"+String.valueOf(averageDenominator)+" "+String.valueOf(averageDenominatorcheck));
 			System.out.println("Incest check ended after "+String.valueOf(System.currentTimeMillis() - IncestStartTime)+"ms");
 			if(leastRelated<CLOSESTALLOWEDINCEST){
 				System.err.println("Population has become too inbred to proceed, replacing bottom 10% with random bots");
@@ -129,7 +123,7 @@ public class RobotBreeder {
 		for(int i=0;i<botCount;i++){
 			int points=(botCount-i);
 			cumulativeProbabilities[i]=runningTotal;
-			cumulativeProbabilities[i]+=Math.pow(points,3);//This line can be changed to reweight probabilities without affecting anything else
+			cumulativeProbabilities[i]+=points;//This line can be changed to reweight probabilities without affecting anything else
 			runningTotal=cumulativeProbabilities[i];
 		}
 		
