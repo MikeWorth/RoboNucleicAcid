@@ -18,19 +18,22 @@ public class RobotBreeder {
 		
 		GeneticCode[] currentGeneration;
 		String[] manualBotNames={
-/*				"sample.Corners",
+				"supersample.SuperSpinBot"
+				/*
+				"sample.Corners",
 				"sample.Crazy",
 				"sample.Fire",
 				"sample.MyFirstJuniorRobot",
 				"sample.MyFirstRobot",
 				"sample.RamFire",
-				"sample.SittingDuck",*/
-				"sample.SpinBot"/*,
+				"sample.SittingDuck",
+				"sample.SpinBot",
 				"sample.Target",
 				"sample.Tracker",
 				"sample.Trackfire",
 				"sample.Walls"
-*/		};		
+*/
+		};		
 		currentGeneration = new GeneticCode[evolveBotNames.length];
 		
 		for(int i=0;i<BOTCOUNT;i++){
