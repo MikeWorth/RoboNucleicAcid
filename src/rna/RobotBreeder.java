@@ -18,7 +18,7 @@ public class RobotBreeder {
 		
 		GeneticCode[] currentGeneration;
 		String[] manualBotNames={
-				"supersample.SuperSpinBot"
+				"sample.SpinBot"
 				/*
 				"sample.Corners",
 				"sample.Crazy",
