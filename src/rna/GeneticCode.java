@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.Random;
 
 /*
@@ -17,11 +18,20 @@ class GeneticCode {
 	private static String robotPath="/home/mike/workspace/RoboNucleicAcid/bin/rna/";
 	private static int genomeLength = EvolveBot.numberOfGenes;
 	private String[] genome;
-	private static double mutationRate=0.001;
-	private static double mutationMagnitude=20;
-	private static double seedLength=0.999;//this is the chance of adding an aditional command to the seed genes; it iterates until it gets lower than this value
 	private String botName;
-	private Lineage lineage;
+	private Lineage lineage;	
+	private static double seedLength=0.999;//this is the chance of adding an additional command to the seed genes; it iterates until it gets lower than this value
+	
+	//These could be placed into the appropriate methods, but having them here makes tweaking easier. I think the difference is compiled out anyway
+	private static double mutationBreedSwapChromosomeRate=0.01;//This is the probability that the 'wrong' string will be picked from a genome when breeding 
+	private static double mutationBreedWrongOrderRate=0.01;//This is the probability that the beginning and end taken from the parents will be assembled the wrong way round when breeding
+	private static double mutationSmallRate=0.001;
+	private static double mutationSmallMagnitude=20;
+	private static double mutationLargeDeleteRate=0.01;
+	private static double mutationLargeReverseRate=0.01;
+	private static double mutationLargeMoveRate=0.01;
+	private static double mutationLargeRepeatRate=0.01;
+
 	
 	//This creates a random seed genome
 	public GeneticCode(){
@@ -51,36 +61,59 @@ class GeneticCode {
 
 		for (int i=0; i<genomeLength;i++){
 			genome[i]="";
-			String genome1="";
-			String genome2="";
-
-			//make genome1 the shorter of the two
-			if(parent1.genome[i].length() < parent2.genome[i].length()){
-				genome1=parent1.genome[i];
-				genome2=parent2.genome[i];
+			
+			
+			//Occasionally get the 'wrong' Chromosome
+			String[] parentGenome = new String[2]; 
+			for(int j=0;j<2;j++){
+				if(generator.nextDouble()<mutationBreedSwapChromosomeRate){
+					parentGenome[j]=parent1.genome[generator.nextInt(genomeLength)];
+				}else{
+					parentGenome[j]=parent1.genome[i];
+				}
+			}
+						
+			//make genomeSmall the shorter of the two TODO: use library sort?
+			String genomeSmall="";
+			String genomeLarge="";
+			if(parentGenome[0].length() < parentGenome[1].length()){
+				genomeSmall=parentGenome[0];
+				genomeLarge=parentGenome[1];
 			}else{
-				genome1=parent2.genome[i];
-				genome2=parent1.genome[i];
+				genomeSmall=parentGenome[1];
+				genomeLarge=parentGenome[0];
 			}
 			
 			int chopPlace=0;
-			if (genome1.length()>0)
-				chopPlace=generator.nextInt(genome1.length());
+			if (genomeSmall.length()>0)
+				chopPlace=generator.nextInt(genomeSmall.length());
 			
 			while((chopPlace % 2) != 0)
 				chopPlace-=1;
-			int avgLength=(genome1.length()+genome2.length())/2;
+			int avgLength=(genomeSmall.length()+genomeLarge.length())/2;
 			while((avgLength % 2) != 0)
 				avgLength+=1;
 			
-			if(genome1.length()>0)
-				genome[i]+=genome1.substring(0,chopPlace);
-			if(genome2.length()>0)
-				genome[i]+=genome2.substring(genome2.length()-(avgLength-chopPlace));
+			//select the 2 constituent bits from the parent strings
+			String firstBit="";
+			String secondBit="";
+			if(genomeSmall.length()>0)
+				firstBit=genomeSmall.substring(0,chopPlace);
+			if(genomeLarge.length()>0)
+				secondBit=genomeLarge.substring(genomeLarge.length()-(avgLength-chopPlace));
+			
+			//Put them together, occasionally putting them back to front
+			if(generator.nextDouble()<mutationBreedWrongOrderRate){
+				genome[i] = secondBit + firstBit;
+			}else{
+				genome[i] = firstBit + secondBit;
+			}
+			
 			if((genome[i].length() % 2)!=0)
 				System.err.println("Breeding Length error: "+genome[i]+" "+parent1.genome[i]+" "+parent2.genome[i]);
 		}
-		mutate();
+		mutateSmallScale();
+		mutateLargeScale();
 		
 		//This prevents problems with things like 'add the following value' on the end of genomes
 		for(int i=0;i<genomeLength;i++){
@@ -266,9 +299,9 @@ class GeneticCode {
 		return javaCode;
 	}
 	
-	//Apply genetic mutations to the genome
-	void mutate(){
-		//TODO: different types of mutation, copying/moving genes from one to another?, swapping the order of genes? 
+	//Apply small scale genetic mutations to the genome
+	void mutateSmallScale(){
+		//TODO: rewrite different mutations as independant?
 		Random generator=new Random();
 		for (int i=0; i<genomeLength;i++){
 			String mutatedGene="";
@@ -277,12 +310,12 @@ class GeneticCode {
 				String base=genome[i].substring(j,j+2);
 				int oldBaseVal=Integer.valueOf(base,16);
 				int newBaseVal=0;
-				if(generator.nextDouble()<mutationRate){
+				if(generator.nextDouble()<mutationSmallRate){
 
 					double mutationType=generator.nextDouble();
 					if(mutationType<0.5){//TODO:tweak probabilities?
 						//Change the value of a gene
-						newBaseVal= oldBaseVal + (int)(generator.nextGaussian()*mutationMagnitude);
+						newBaseVal= oldBaseVal + (int)(generator.nextGaussian()*mutationSmallMagnitude);
 						while (newBaseVal>255)newBaseVal-=256;//a gaussian has a very small but finite chance of being bloody miles away from 0
 						while (newBaseVal<0)newBaseVal+=256;
 						base=Integer.toHexString(newBaseVal);
@@ -303,7 +336,7 @@ class GeneticCode {
 				mutatedGene+=base;
 			}
 			//Even if the genome is empty, we could add one to the end
-			if(generator.nextDouble()<mutationRate){
+			if(generator.nextDouble()<mutationSmallRate){
 				String newBase=Integer.toHexString(generator.nextInt(256));
 				while(newBase.length()<2){
 					newBase="0"+newBase;
@@ -315,6 +348,53 @@ class GeneticCode {
 			genome[i]=mutatedGene;
 		}
 	}
+	
+	void mutateLargeScale(){
+		Random generator=new Random();
+		for (int i=0; i<genomeLength;i++){
+			//split the chromosome into pre,mutation,post. Potential for frame misalignment is intentional
+			int[] boundaries = new int[2];
+			if(genome[i].length()>0){
+				for(int j=0;j<2;j++){
+					boundaries[j]=generator.nextInt(genome[i].length()-1);//TODO: control relative positions of boundaries in some way?
+				}
+				Arrays.sort(boundaries);
+				
+				String pre=genome[i].substring(0,boundaries[0]);
+				String mutation=genome[i].substring(boundaries[0],boundaries[1]);
+				String post=genome[i].substring(boundaries[1]);
+				
+				//only do at most one; this makes things a bit simpler and these probabilities coming up together is rare enough to make a negligible difference
+				if(generator.nextDouble()<mutationLargeDeleteRate){
+					//delete a chunk
+					genome[i]=pre + post;
+				}else if(generator.nextDouble()<mutationLargeReverseRate){
+					//reverse order of bytes in chunk
+					String flippedMutation="";
+					for (int k=mutation.length()-1;k>=0;k--){
+						flippedMutation+=mutation.charAt(k);
+					}
+					genome[i] = pre + flippedMutation + post;
+				}else if(generator.nextDouble()<mutationLargeMoveRate){
+					//move a chunk
+					StringBuffer genomeBuffer = new StringBuffer(pre + post);
+					int insertLocation=generator.nextInt(genomeBuffer.length()-1);
+					genomeBuffer.insert(insertLocation, mutation);
+					genome[i]=genomeBuffer.toString();
+				}else if(generator.nextDouble()<mutationLargeRepeatRate){
+					//repeat chunk
+					genome[i]=pre + mutation + mutation + post;
+				}
+
+				//Make sure length is made of an even number of characters(nybbles)
+				if((genome[i].length() % 2)!=0)
+					genome[i]+="0";
+	
+			}
+		}
+	}
+	
+	
 	
 	//write this genome to a file so a robot can use it
 	public void commitToRobot(String name) throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
