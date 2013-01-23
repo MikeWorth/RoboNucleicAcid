@@ -89,7 +89,7 @@ public class RobotBreeder {
 			
 			rankedBots[0].commitToRobot("EvolveBot");//put the winner here for external viewing
 			String genString=String.valueOf(generation);
-			while(genString.length()<4)
+			while(genString.length()<5)
 				genString="0"+genString;
 			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
 
