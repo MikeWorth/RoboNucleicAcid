@@ -62,9 +62,10 @@ public class RobotBreeder {
 			double generationCousinality=0;
 			double IncestStartTime=System.currentTimeMillis();
 			int averageDenominator=BOTCOUNT*(BOTCOUNT-1)/2;
+			int maxSearchDepth=(int) ((Math.log(BOTCOUNT)/Math.log(2))+0.5);//log2(BOTCOUNT) round up; it is impossible to be any less related than this
 			for(int i=0;i<BOTCOUNT;i++){
 				for(int j=i+1;j<BOTCOUNT;j++){
-					int cousinality=Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),10);//TODO: how deep to search? A long term limit exists, calculate that? log2(BOTCOUNT) round up
+					int cousinality=Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),maxSearchDepth);
 					generationCousinality+= ((double) cousinality)/averageDenominator;
 					leastRelated=Math.max(leastRelated,cousinality);
 				}
