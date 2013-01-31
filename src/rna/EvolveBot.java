@@ -190,6 +190,7 @@ public class EvolveBot extends AdvancedRobot
 		double[] eventValues={};
 		ActOnGene(genes[0],eventValues);
 		while (true) {
+			ahead(1);//This stops skipped turns, bloody ugly and might intefere with things though
 			ActOnGene(genes[1],eventValues);
 		}
 	}
