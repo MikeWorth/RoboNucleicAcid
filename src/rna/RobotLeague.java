@@ -21,6 +21,7 @@ public class RobotLeague {
 		scoreKeeper=new ScoreKeeper(challengerBots);
 		
 		RobocodeEngine engine = new RobocodeEngine((new File("/home/mike/.robocode")));//TODO: automatically detect dir?
+		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification();
 		engine.addBattleListener(scoreKeeper);
 		RobotSpecification[] pairing;
 		
@@ -29,8 +30,9 @@ public class RobotLeague {
 			for(int i=0; i<challengerBots.length;i++){
 				for (int j=i+1;j<challengerBots.length;j++){
 					pairing=engine.getLocalRepository(botGenomes[i].getName()+","+botGenomes[j].getName());
-					BattleSpecification battleSpec = new BattleSpecification(rounds, new BattlefieldSpecification(),pairing);
+					BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield, pairing);
 					engine.runBattle(battleSpec,true);//TODO multithreading?
+					System.out.print('.');
 				}
 			}
 		}
@@ -39,11 +41,14 @@ public class RobotLeague {
 		for(int i=0;i<yardstickBots.length;i++){
 			for (int j=0;j<challengerBots.length;j++){
 				pairing=engine.getLocalRepository(yardstickBots[i]+","+botGenomes[j].getName());
-				BattleSpecification battleSpec = new BattleSpecification(rounds, new BattlefieldSpecification(),pairing);
+				BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield ,pairing);
 				engine.runBattle(battleSpec,true);//TODO multithreading?
+				System.out.print('.');
 			}				
 		}
 		engine.close();
+		//A newline after the series of dots for each battle, otherwise we run the next output onto it
+		System.out.print('\n');
 	}
 
 	public GeneticCode[] getChallengersInOrder(){

@@ -12,13 +12,14 @@ public class RobotBreeder {
 		
 		String[] evolveBotNames=new String[BOTCOUNT];
 		for(int i=0;i<BOTCOUNT;i++){
-			evolveBotNames[i]="rna.EB"+String.valueOf(i);
+			evolveBotNames[i]="rna.EB"+String.valueOf(i)+"*";//Dunno why this is now required
 		}
 
 		
 		GeneticCode[] currentGeneration;
 		String[] manualBotNames={
-				"sample.SpinBot"
+				//"sample.SpinBot",
+				"supersample.SuperSpinBot*"
 				/*
 				"sample.Corners",
 				"sample.Crazy",
@@ -43,20 +44,24 @@ public class RobotBreeder {
 		
 		int generation=1;
 		PrintWriter log = new PrintWriter("RNA log.csv");
+
+		double generationTimer=System.currentTimeMillis();
 		
 		
 		while(true){
 			
-			double generationStartTime=System.currentTimeMillis();
 
+			double fightingStartTime=System.currentTimeMillis();
 			RobotLeague league=new RobotLeague(currentGeneration, manualBotNames, false);
 			
 			GeneticCode[] rankedBots=league.getChallengersInOrder();
+			System.out.println("Fighting took:" + Double.valueOf((System.currentTimeMillis() - fightingStartTime)/1000) + "s");
+			GeneticCode winner=rankedBots[0];
+			int winnerScore=league.getScore(winner);
+			int averageScore=league.getAverageScore();
 			
 			GeneticCode[] newGeneration = new GeneticCode[BOTCOUNT];
-			GeneticCode winner=rankedBots[0];
 			System.out.println(winner.getName() + "(" + winner.getPersonifiedName() + ") wins generation " + String.valueOf(generation) + "!");
-			double generationTime=System.currentTimeMillis() - generationStartTime;
 			
 			int leastRelated=0;
 			double generationCousinality=0;
@@ -70,19 +75,22 @@ public class RobotBreeder {
 					leastRelated=Math.max(leastRelated,cousinality);
 				}
 			}
-			System.out.println("Incest check ended after "+String.valueOf(System.currentTimeMillis() - IncestStartTime)+"ms");
+			System.out.println("Incest check took:"+String.valueOf(System.currentTimeMillis() - IncestStartTime)+"ms");
 			if(leastRelated<CLOSESTALLOWEDINCEST){
 				System.err.println("Population has become too inbred to proceed, replacing bottom 10% with random bots");
 				for (int i=(BOTCOUNT*9)/10;i<BOTCOUNT;i++)
 					rankedBots[i]=new GeneticCode();
 			}
 
+			double generationTime=System.currentTimeMillis() - generationTimer;
+			generationTimer=System.currentTimeMillis();
+
 			String logLine="";
 			logLine += String.valueOf(generation) + ",";
 			logLine += winner.getName() + ",";
 			logLine += '"' + winner.getPersonifiedName() + "\",";
-			logLine += league.getScore(winner) + ",";
-			logLine += league.getAverageScore() + ",";
+			logLine += winnerScore + ",";
+			logLine += averageScore + ",";
 			logLine += String.valueOf(generationCousinality) + ",";
 			logLine += String.valueOf(generationTime);
 			log.println(logLine);
@@ -94,19 +102,20 @@ public class RobotBreeder {
 				genString="0"+genString;
 			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
 
+			double breedingStartTime=System.currentTimeMillis();
 			for(int i=0;i<BOTCOUNT;i++){
 				GeneticCode parent1=getWeightedRandomBot(rankedBots);
 				GeneticCode parent2=getWeightedRandomBot(rankedBots);
 				
 				//promote genetic diversity by prohibiting incest:
 				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage(),CLOSESTALLOWEDINCEST+1)<CLOSESTALLOWEDINCEST){
-					System.out.println("Incest prevented while parenting new bot "+String.valueOf(i));
 					parent1=getWeightedRandomBot(rankedBots);
 					parent2=getWeightedRandomBot(rankedBots);
 				}
 				
 				newGeneration[i] = new GeneticCode(parent1,parent2);
 			}
+			System.out.println("Breeding took:" + Double.valueOf((System.currentTimeMillis() - breedingStartTime)/1000) + "s");
 
 			
 			//Finally ditch the old generation, replacing it with the current

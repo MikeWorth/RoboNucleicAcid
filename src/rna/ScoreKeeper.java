@@ -29,7 +29,6 @@ class ScoreKeeper extends BattleAdaptor {
 	}
 
 	public void onBattleCompleted(BattleCompletedEvent e){
-		System.out.print('.');
 		int[] battleScore=new int[2];
 		battleScore[0]=e.getIndexedResults()[0].getScore();
 		battleScore[1]=e.getIndexedResults()[1].getScore();
