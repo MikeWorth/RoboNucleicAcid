@@ -20,7 +20,7 @@ public class RobotLeague {
 		numberOfChallengers=botGenomes.length;
 		scoreKeeper=new ScoreKeeper(challengerBots);
 		
-		RobocodeEngine engine = new RobocodeEngine((new File("/home/mike/.robocode")));//TODO: automatically detect dir?
+		RobocodeEngine engine = new RobocodeEngine((new File("robocode")));//TODO: automatically detect dir?
 		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification();
 		engine.addBattleListener(scoreKeeper);
 		RobotSpecification[] pairing;
@@ -46,6 +46,7 @@ public class RobotLeague {
 				System.out.print('.');
 			}				
 		}
+		engine.removeBattleListener(scoreKeeper);//If I don't remove this here it hangs around somehow and the nth generation counts the scores n times
 		engine.close();
 		//A newline after the series of dots for each battle, otherwise we run the next output onto it
 		System.out.print('\n');

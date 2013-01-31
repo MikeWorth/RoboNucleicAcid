@@ -15,7 +15,7 @@ import java.util.Random;
  */
 class GeneticCode {
 
-	private static String robotPath="/home/mike/workspace/RoboNucleicAcid/bin/rna/";
+	private static String robotPath="bin/rna/";
 	private static int genomeLength = EvolveBot.numberOfGenes;
 	private String[] genome;
 	private String botName;
@@ -401,6 +401,7 @@ class GeneticCode {
 
 		botName=name;
 		String shortName=name.substring(name.lastIndexOf('.')+1);//This doesn't have the package prefix
+		if (shortName.substring(shortName.length()-1).equals("*"))shortName=shortName.substring(0,shortName.length()-1);//TODO fix the bastard * issue
 		
 		File robotDataDirectory=new File(robotPath + shortName + ".data");
 		if(!robotDataDirectory.exists())
