@@ -1,6 +1,8 @@
 package rna;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 
 import robocode.control.BattleSpecification;
 import robocode.control.BattlefieldSpecification;
@@ -14,21 +16,24 @@ public class RobotLeague {
 	private int numberOfChallengers;
 	private GeneticCode[] botGenomes;
 	
-	public RobotLeague(GeneticCode[] challengerBots,String[] yardstickBots,boolean interChallengerBattles){
+	public RobotLeague(Generation generation,String[] yardstickBots,boolean interChallengerBattles) throws FileNotFoundException, UnsupportedEncodingException{
 		
-		botGenomes=challengerBots;
-		numberOfChallengers=botGenomes.length;
-		scoreKeeper=new ScoreKeeper(challengerBots);
+		botGenomes=generation.getBots();
+		numberOfChallengers=botGenomes.length;//TODO is this a good thing?
+		scoreKeeper=new ScoreKeeper(botGenomes);
 		
 		RobocodeEngine engine = new RobocodeEngine((new File("robocode")));//TODO: automatically detect dir?
+		//engine.setVisible(true);
 		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification();
 		engine.addBattleListener(scoreKeeper);
 		RobotSpecification[] pairing;
 		
+		commitToBots();
+		
 		//run interchallenger battles
 		if(interChallengerBattles){
-			for(int i=0; i<challengerBots.length;i++){
-				for (int j=i+1;j<challengerBots.length;j++){
+			for(int i=0; i<botGenomes.length;i++){
+				for (int j=i+1;j<botGenomes.length;j++){
 					pairing=engine.getLocalRepository(botGenomes[i].getName()+","+botGenomes[j].getName());
 					BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield, pairing);
 					engine.runBattle(battleSpec,true);//TODO multithreading?
@@ -39,7 +44,7 @@ public class RobotLeague {
 
 		//Now make each challengerBot fight each yardstickBot 
 		for(int i=0;i<yardstickBots.length;i++){
-			for (int j=0;j<challengerBots.length;j++){
+			for (int j=0;j<botGenomes.length;j++){
 				pairing=engine.getLocalRepository(yardstickBots[i]+","+botGenomes[j].getName());
 				BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield ,pairing);
 				engine.runBattle(battleSpec,true);//TODO multithreading?
@@ -67,4 +72,11 @@ public class RobotLeague {
 		}
 		return runningTotal/numberOfChallengers;
 	}
+	private void commitToBots() throws FileNotFoundException, UnsupportedEncodingException{
+		for(int i=0;i<numberOfChallengers;i++){
+			botGenomes[i].commitToRobot();
+		}
+		
+	}
+	
 }

@@ -1,86 +1,69 @@
 package rna;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Random;
+import java.io.UnsupportedEncodingException;
 
 public class RobotBreeder {
 	
+	private static int BOTCOUNT=50;//Don't make this larger than 50 without making more EB*.class
+	private static int CLOSESTALLOWEDINCEST=2;
+	
+	private static String[] evolveBotNames(){
+		String names[] = new String[BOTCOUNT];
+		for(int i=0;i<BOTCOUNT;i++){
+			names[i]="rna.EB"+String.valueOf(i)+"*";//Dunno why this is now required
+		}
+		return names;
+	}
+	
+	private static String[] manualBotNames={
+			"supersample.SuperSpinBot*"
+	};		
+	
 	public static void main(String[] args) throws IOException{
 		
-		final int BOTCOUNT=50;//Don't make this larger than 50 without making more EB*.class
-		final int CLOSESTALLOWEDINCEST=2;
-		
-		String[] evolveBotNames=new String[BOTCOUNT];
-		for(int i=0;i<BOTCOUNT;i++){
-			evolveBotNames[i]="rna.EB"+String.valueOf(i)+"*";//Dunno why this is now required
-		}
 
+		Generation evolvedGeneration=BreedPopulation(1000,"RNA log.csv");
 		
-		GeneticCode[] currentGeneration;
-		String[] manualBotNames={
-				//"sample.SpinBot",
-				"supersample.SuperSpinBot*"
-				/*
-				"sample.Corners",
-				"sample.Crazy",
-				"sample.Fire",
-				"sample.MyFirstJuniorRobot",
-				"sample.MyFirstRobot",
-				"sample.RamFire",
-				"sample.SittingDuck",
-				"sample.SpinBot",
-				"sample.Target",
-				"sample.Tracker",
-				"sample.Trackfire",
-				"sample.Walls"
-*/
-		};		
-		currentGeneration = new GeneticCode[evolveBotNames.length];
-		
-		for(int i=0;i<BOTCOUNT;i++){
-			currentGeneration[i] = new GeneticCode();
-			currentGeneration[i].commitToRobot(evolveBotNames[i]);
-		}
-		
-		int generation=1;
+	}
+	
+	private static Generation BreedPopulation(int generations,String logFileName) throws FileNotFoundException, UnsupportedEncodingException{
+		Generation seedGeneration = new Generation(evolveBotNames());
+		return BreedPopulation(generations, logFileName,seedGeneration);
+	}
+	
+	private static Generation BreedPopulation(int generations,String logFileName, Generation initialPopulation) throws FileNotFoundException, UnsupportedEncodingException{
 		PrintWriter log = new PrintWriter("RNA log.csv");
-
+		
+		Generation currentGeneration = initialPopulation;
 		double generationTimer=System.currentTimeMillis();
 		
-		
-		while(true){
-			
+		for (int generation=0;generation<generations;generation++){
 
+		
 			double fightingStartTime=System.currentTimeMillis();
-			RobotLeague league=new RobotLeague(currentGeneration, manualBotNames, false);
-			
+			RobotLeague league = new RobotLeague(currentGeneration, manualBotNames, false); 
 			GeneticCode[] rankedBots=league.getChallengersInOrder();
+			
 			System.out.println("Fighting took:" + Double.valueOf((System.currentTimeMillis() - fightingStartTime)/1000) + "s");
+			
 			GeneticCode winner=rankedBots[0];
 			int winnerScore=league.getScore(winner);
 			int averageScore=league.getAverageScore();
 			
-			GeneticCode[] newGeneration = new GeneticCode[BOTCOUNT];
 			System.out.println(winner.getName() + "(" + winner.getPersonifiedName() + ") wins generation " + String.valueOf(generation) + "!");
 			
+			/*TODO fix excess incest
 			int leastRelated=0;
-			double generationCousinality=0;
 			double IncestStartTime=System.currentTimeMillis();
-			int averageDenominator=BOTCOUNT*(BOTCOUNT-1)/2;
-			int maxSearchDepth=(int) ((Math.log(BOTCOUNT)/Math.log(2))+0.5);//log2(BOTCOUNT) round up; it is impossible to be any less related than this
-			for(int i=0;i<BOTCOUNT;i++){
-				for(int j=i+1;j<BOTCOUNT;j++){
-					int cousinality=Lineage.getCousinality(currentGeneration[i].getLineage(), currentGeneration[j].getLineage(),maxSearchDepth);
-					generationCousinality+= ((double) cousinality)/averageDenominator;
-					leastRelated=Math.max(leastRelated,cousinality);
-				}
-			}
 			System.out.println("Incest check took:"+String.valueOf(System.currentTimeMillis() - IncestStartTime)+"ms");
 			if(leastRelated<CLOSESTALLOWEDINCEST){
 				System.err.println("Population has become too inbred to proceed, replacing bottom 10% with random bots");
 				for (int i=(BOTCOUNT*9)/10;i<BOTCOUNT;i++)
 					rankedBots[i]=new GeneticCode();
 			}
+			*/
 
 			double generationTime=System.currentTimeMillis() - generationTimer;
 			generationTimer=System.currentTimeMillis();
@@ -91,63 +74,32 @@ public class RobotBreeder {
 			logLine += '"' + winner.getPersonifiedName() + "\",";
 			logLine += winnerScore + ",";
 			logLine += averageScore + ",";
-			logLine += String.valueOf(generationCousinality) + ",";
+			logLine += String.valueOf(currentGeneration.getAverageCousinality()) + ",";
 			logLine += String.valueOf(generationTime);
+			System.out.println(logLine);//TODO why doesn't this go to file?
 			log.println(logLine);
 			log.flush();
 			
+			
+			//Save copies of the winning bot for external evaluation/analysis
 			rankedBots[0].commitToRobot("EvolveBot");//put the winner here for external viewing
 			String genString=String.valueOf(generation);
 			while(genString.length()<5)
 				genString="0"+genString;
 			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
 
-			double breedingStartTime=System.currentTimeMillis();
-			for(int i=0;i<BOTCOUNT;i++){
-				GeneticCode parent1=getWeightedRandomBot(rankedBots);
-				GeneticCode parent2=getWeightedRandomBot(rankedBots);
-				
-				//promote genetic diversity by prohibiting incest:
-				while(Lineage.getCousinality(parent1.getLineage(), parent2.getLineage(),CLOSESTALLOWEDINCEST+1)<CLOSESTALLOWEDINCEST){
-					parent1=getWeightedRandomBot(rankedBots);
-					parent2=getWeightedRandomBot(rankedBots);
-				}
-				
-				newGeneration[i] = new GeneticCode(parent1,parent2);
+			if (generation<generations - 1){
+				double breedingStartTime=System.currentTimeMillis();
+				currentGeneration = new Generation(evolveBotNames(),rankedBots,CLOSESTALLOWEDINCEST);
+				System.out.println("Breeding took:" + Double.valueOf((System.currentTimeMillis() - breedingStartTime)/1000) + "s");
+			}else{
+				return currentGeneration;
 			}
-			System.out.println("Breeding took:" + Double.valueOf((System.currentTimeMillis() - breedingStartTime)/1000) + "s");
-
-			
-			//Finally ditch the old generation, replacing it with the current
-			currentGeneration=newGeneration;
-			for(int i=0;i<BOTCOUNT;i++){
-				currentGeneration[i].commitToRobot(evolveBotNames[i]);
-			}
-			generation++;
 		}
+		System.err.println("something's gone wrong; don't trust the generation returned");
+		return currentGeneration;//This shouldn't ever happen
 	}
 	
-	private static GeneticCode getWeightedRandomBot(GeneticCode[] rankedBots){
-		int botCount = rankedBots.length;//This shouldn't vary from the main botCount, but I'd rather not constrain it in case things change later
-		Random generator=new Random();
-		
-		int cumulativeProbabilities[]=new int[botCount];
-		int runningTotal=0;
-		for(int i=0;i<botCount;i++){
-			int points=(botCount-i);
-			cumulativeProbabilities[i]=runningTotal;
-			cumulativeProbabilities[i]+=points;//This line can be changed to reweight probabilities without affecting anything else
-			runningTotal=cumulativeProbabilities[i];
-		}
-		
-		double rnd=generator.nextInt(runningTotal);
-		for(int i=0;i<botCount;i++){
-			if (rnd<=cumulativeProbabilities[i])
-				return rankedBots[i];
-		}
-		
-		return rankedBots[0];
-	}
 	
 }
 

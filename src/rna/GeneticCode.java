@@ -34,7 +34,8 @@ class GeneticCode {
 
 	
 	//This creates a random seed genome
-	public GeneticCode(){
+	public GeneticCode(String name){
+		botName=name;
 		lineage=new Lineage();
 		genome = new String[genomeLength];
 		Random generator=new Random();
@@ -51,9 +52,10 @@ class GeneticCode {
 	}
 
 	//This breeds a new genome from 2 parents 
-	public GeneticCode(GeneticCode parent1,GeneticCode parent2){
+	public GeneticCode(String name,GeneticCode parent1,GeneticCode parent2){
+
+		botName=name;
 		
-		//We can only provide one lineage; pick the first for no particular reason
 		lineage=new Lineage(parent1.getLineage(),parent2.getLineage());
 		
 		genome = new String[genomeLength];
@@ -397,9 +399,11 @@ class GeneticCode {
 	
 	
 	//write this genome to a file so a robot can use it
+	public void commitToRobot() throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
+		commitToRobot(botName);
+	}	
 	public void commitToRobot(String name) throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
 
-		botName=name;
 		String shortName=name.substring(name.lastIndexOf('.')+1);//This doesn't have the package prefix
 		if (shortName.substring(shortName.length()-1).equals("*"))shortName=shortName.substring(0,shortName.length()-1);//TODO fix the bastard * issue
 		
