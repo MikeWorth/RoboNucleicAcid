@@ -25,8 +25,8 @@ public class RobotBreeder {
 	public static void main(String[] args) throws IOException{
 		
 
-		GeneticCode[] EvolvedA=BreedPopulation(SeparationTime,"Population.0a.csv");
-		GeneticCode[] EvolvedB=BreedPopulation(SeparationTime,"Population.0b.csv");
+		GeneticCode[] EvolvedA=BreedPopulation(SeparationTime,"Population0a");
+		GeneticCode[] EvolvedB=BreedPopulation(SeparationTime,"Population0b");
 
 		for(int population=1;true;population++){
 			
@@ -43,10 +43,10 @@ public class RobotBreeder {
 			Generation populationA = new Generation(evolveBotNames(), combinedBots, CLOSESTALLOWEDINCEST);
 			Generation populationB = new Generation(evolveBotNames(), combinedBots, CLOSESTALLOWEDINCEST);
 			
-			String popALog="Population."+String.valueOf(population)+"a.csv";
+			String popALog="Population"+String.valueOf(population)+"a";
 			 EvolvedA = BreedPopulation(SeparationTime,popALog ,populationA );
 
-			String popBLog="Population."+String.valueOf(population)+"b.csv";
+			String popBLog="Population"+String.valueOf(population)+"b";
 			 EvolvedB = BreedPopulation(SeparationTime,popBLog ,populationB );
 			
 			
@@ -59,8 +59,8 @@ public class RobotBreeder {
 		return BreedPopulation(generations, logFileName,seedGeneration);
 	}
 	
-	private static GeneticCode[] BreedPopulation(int generations,String logFileName, Generation initialPopulation) throws FileNotFoundException, UnsupportedEncodingException{
-		PrintWriter log = new PrintWriter(logFileName);
+	private static GeneticCode[] BreedPopulation(int generations,String populationName, Generation initialPopulation) throws FileNotFoundException, UnsupportedEncodingException{
+		PrintWriter log = new PrintWriter(populationName+".csv");
 		
 		Generation currentGeneration = initialPopulation;
 		double generationTimer=System.currentTimeMillis();
@@ -113,7 +113,7 @@ public class RobotBreeder {
 			String genString=String.valueOf(generation);
 			while(genString.length()<5)
 				genString="0"+genString;
-			rankedBots[0].commitToRobot("winner"+genString);//These bots don't exist, but it will save a copy of the genomes regardless
+			rankedBots[0].commitToRobot("winner"+populationName+genString);//These bots don't exist, but it will save a copy of the genomes regardless
 
 			double breedingStartTime=System.currentTimeMillis();
 			currentGeneration = new Generation(evolveBotNames(),rankedBots,CLOSESTALLOWEDINCEST);
