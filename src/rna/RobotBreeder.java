@@ -103,17 +103,16 @@ public class RobotBreeder {
 			logLine += averageScore + ",";
 			logLine += String.valueOf(currentGeneration.getAverageCousinality()) + ",";
 			logLine += String.valueOf(generationTime);
-			System.out.println(logLine);//TODO why doesn't this go to file?
 			log.println(logLine);
 			log.flush();
 			
 			
 			//Save copies of the winning bot for external evaluation/analysis
-			rankedBots[0].commitToRobot("EvolveBot");//put the winner here for external viewing
+			rankedBots[0].commitToRobot("EvolveBot",false);//put the winner here for external viewing
 			String genString=String.valueOf(generation);
 			while(genString.length()<5)
 				genString="0"+genString;
-			rankedBots[0].commitToRobot("winner"+populationName+genString);//These bots don't exist, but it will save a copy of the genomes regardless
+			rankedBots[0].commitToRobot("winner"+populationName+genString,true);//These bots don't exist, but it will save a copy of the genomes regardless
 
 			double breedingStartTime=System.currentTimeMillis();
 			currentGeneration = new Generation(evolveBotNames(),rankedBots,CLOSESTALLOWEDINCEST);

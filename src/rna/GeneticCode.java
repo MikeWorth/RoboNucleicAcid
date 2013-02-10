@@ -25,8 +25,10 @@ class GeneticCode {
 	//These could be placed into the appropriate methods, but having them here makes tweaking easier. I think the difference is compiled out anyway
 	private static double mutationBreedSwapChromosomeRate=0.01;//This is the probability that the 'wrong' string will be picked from a genome when breeding 
 	private static double mutationBreedWrongOrderRate=0.01;//This is the probability that the beginning and end taken from the parents will be assembled the wrong way round when breeding
-	private static double mutationSmallRate=0.001;
-	private static double mutationSmallMagnitude=20;
+	private static double mutationSmallDeleteRate=0.001;
+	private static double mutationSmallAddRate=0.001;
+	private static double mutationSmallModifyRate=0.001;
+	private static double mutationSmallModifyMagnitude=20;
 	private static double mutationLargeDeleteRate=0.01;
 	private static double mutationLargeReverseRate=0.01;
 	private static double mutationLargeMoveRate=0.01;
@@ -306,48 +308,46 @@ class GeneticCode {
 		//TODO: rewrite different mutations as independant?
 		Random generator=new Random();
 		for (int i=0; i<genomeLength;i++){
-			String mutatedGene="";
-			
-			for(int j=0;j<genome[i].length();j+=2){
-				String base=genome[i].substring(j,j+2);
-				int oldBaseVal=Integer.valueOf(base,16);
-				int newBaseVal=0;
-				if(generator.nextDouble()<mutationSmallRate){
 
-					double mutationType=generator.nextDouble();
-					if(mutationType<0.5){//TODO:tweak probabilities?
-						//Change the value of a gene
-						newBaseVal= oldBaseVal + (int)(generator.nextGaussian()*mutationSmallMagnitude);
-						while (newBaseVal>255)newBaseVal-=256;//a gaussian has a very small but finite chance of being bloody miles away from 0
-						while (newBaseVal<0)newBaseVal+=256;
-						base=Integer.toHexString(newBaseVal);
-						if(base.length()==1)base="0"+base;
-					}else if(mutationType<0.75){//TODO:tweak probabilities?
-						//Add a gene, potential to misalign operations/arguements is intentional
-						String newBase=Integer.toHexString(generator.nextInt(256));
-						while(newBase.length()<2){
-							newBase="0"+newBase;
-						}
-						base+=newBase;
-					}else{
-						//Remove a gene
-						base="";
-					}
-				}
-				if(base.length()!=2&&base.length()!=4&&base.length()!=0) System.err.println("Baselength wrong:"+base+":"+Integer.valueOf(oldBaseVal)+":"+Integer.valueOf(newBaseVal));
-				mutatedGene+=base;
+			//Delete some bits
+			int numberOfDeletions=(int) (genome[i].length() * mutationSmallDeleteRate);//TODO: add a gausian for varying numbers of mutations
+			for(int j=0;j<numberOfDeletions;j++){
+				int mutationPosition=generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation
+				genome[i]=genome[i].substring(0,mutationPosition) + genome[i].substring(mutationPosition+2);
 			}
-			//Even if the genome is empty, we could add one to the end
-			if(generator.nextDouble()<mutationSmallRate){
+			
+			//Add some bits
+			int numberOfAdditions=(int) (genome[i].length() * mutationSmallAddRate);//TODO: add a gausian for varying numbers of mutations
+			for(int j=0;j<numberOfAdditions;j++){
+				int mutationPosition=generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation				
 				String newBase=Integer.toHexString(generator.nextInt(256));
 				while(newBase.length()<2){
 					newBase="0"+newBase;
 				}
-				mutatedGene+=newBase;				
+				
+				genome[i]=genome[i].substring(0,mutationPosition) + newBase + genome[i].substring(mutationPosition);
+			}
+			
+			//Change the value of some bits
+			int numberOfModifications=(int) (genome[i].length() * mutationSmallModifyRate);//TODO: add a gausian for varying numbers of mutations
+			for(int j=0;j<numberOfModifications;j++){
+				int mutationPosition=generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation
+				
+				int oldBaseVal = Integer.valueOf(genome[i].substring(mutationPosition,mutationPosition+2),16);
+				int newBaseVal= oldBaseVal + (int)(generator.nextGaussian()*mutationSmallModifyMagnitude);
+				while (newBaseVal>255)newBaseVal-=256;//a gaussian has a very small but finite chance of being bloody miles away from 0
+				while (newBaseVal<0)newBaseVal+=256;
+
+				String newBase=Integer.toHexString(newBaseVal);
+				while(newBase.length()<2){
+					newBase="0"+newBase;
+				}
+				
+				genome[i]=genome[i].substring(0,mutationPosition) + newBase + genome[i].substring(mutationPosition+2);
 			}
 
-			if((mutatedGene.length()% 2)!=0)System.err.println("Mutated Length error: "+genome[i]+" "+mutatedGene);
-			genome[i]=mutatedGene;
+
+			if((genome[i].length()% 2)!=0)System.err.println("Mutated Length error: "+genome[i]+" "+genome[i]);
 		}
 	}
 	
@@ -400,9 +400,9 @@ class GeneticCode {
 	
 	//write this genome to a file so a robot can use it
 	public void commitToRobot() throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
-		commitToRobot(botName);
+		commitToRobot(botName,false);
 	}	
-	public void commitToRobot(String name) throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
+	public void commitToRobot(String name,boolean javaCode) throws FileNotFoundException, UnsupportedEncodingException{//TODO: strip out junk rna here to improve efficiency
 
 		String shortName=name.substring(name.lastIndexOf('.')+1);//This doesn't have the package prefix
 		if (shortName.substring(shortName.length()-1).equals("*"))shortName=shortName.substring(0,shortName.length()-1);//TODO fix the bastard * issue
@@ -419,10 +419,12 @@ class GeneticCode {
 			rnaWriter.println(genome[i]);
 		}
 		rnaWriter.close();
-
-		PrintWriter sourceWriter = new PrintWriter(robotPath + shortName + ".data/source.java");
-		sourceWriter.println(toJavaCode());
-		sourceWriter.close();
+		
+		if(javaCode){
+			PrintWriter sourceWriter = new PrintWriter(robotPath + shortName + ".data/source.java");//TODO: I think this is very expensive for large genomes; do it more sparingly? 
+			sourceWriter.println(toJavaCode());
+			sourceWriter.close();
+		}
 	}
 	
 	public String getName(){
