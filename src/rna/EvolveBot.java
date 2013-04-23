@@ -110,30 +110,30 @@ public class EvolveBot extends AdvancedRobot
 					//setTurnRadarRight(workingValue);
 					break;
 				case 22:
-					workingValue+=gene[i++];
+					workingValue+=gene[++i];
 					break;
 				case 23:
-					workingValue-=gene[i++];
+					workingValue-=gene[++i];
 					break;
 				case 24:
-					workingValue*=gene[i++];
+					workingValue*=gene[++i];
 					break;
 				case 25:
-					workingValue/=gene[i++];
+					workingValue/=gene[++i];
 					break;
 				case 26:
-					workingValue=gene[i++];
+					workingValue=gene[++i];
 					break;
 				case 27:
-					if(workingValue>gene[i++])
+					if(workingValue>gene[++i])
 						skipping=true;
 					break;
 				case 28:
-					if(workingValue<gene[i++])
+					if(workingValue<gene[++i])
 						skipping=true;
 					break;
 				case 29:
-					if(workingValue==gene[i++])
+					if(workingValue==gene[++i])
 						skipping=true;
 					break;
 				default:
