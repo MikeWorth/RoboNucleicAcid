@@ -271,15 +271,15 @@ class GeneticCode {
 				workingValue=value;
 				break;
 			case 27:
-				javaCode+="if("+workingValue+">"+value+"){";
+				javaCode+="if !("+workingValue+">"+value+"){";
 				loopDepth+=1;
 				break;
 			case 28:
-				javaCode+="if("+workingValue+"<"+value+"){";
+				javaCode+="if !("+workingValue+"<"+value+"){";
 				loopDepth+=1;
 				break;
 			case 29:
-				javaCode+="if("+workingValue+"=="+value+"){";
+				javaCode+="if !("+workingValue+"=="+value+"){";
 				loopDepth+=1;
 				break;
 			default:

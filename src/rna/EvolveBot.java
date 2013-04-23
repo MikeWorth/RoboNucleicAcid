@@ -38,13 +38,10 @@ public class EvolveBot extends AdvancedRobot
 	 */
 	void ActOnGene(int[] gene,double[] eventValues){
 		double workingValue=0;//reset this each time
-		boolean skipping=false;
 		for(int i=0;i< gene.length;i++){
-			if(!skipping){
-				switch(gene[i]){
+			switch(gene[i]){
 				case 0:
 					//zero is reserved as a loop terminator
-					skipping=false;
 					break;
 				case 1:
 					ahead(workingValue);
@@ -125,16 +122,26 @@ public class EvolveBot extends AdvancedRobot
 					workingValue=gene[++i];
 					break;
 				case 27:
-					if(workingValue>gene[++i])
-						skipping=true;
+					if(workingValue>gene[i++]){
+						//skip until we find a zero or fall off the end of the gene sequence
+						do{
+							i++;
+						}while(i < gene.length && gene[i] != 0);
+					}
 					break;
 				case 28:
-					if(workingValue<gene[++i])
-						skipping=true;
+					if(workingValue<gene[i++])
+						//skip until we find a zero or fall off the end of the gene sequence
+						do{
+							i++;
+						}while(i < gene.length && gene[i] != 0);
 					break;
 				case 29:
-					if(workingValue==gene[++i])
-						skipping=true;
+					if(workingValue==gene[i++])
+						//skip until we find a zero or fall off the end of the gene sequence
+						do{
+							i++;
+						}while(i < gene.length && gene[i] != 0);
 					break;
 				default:
 					int staticCommands=30;
@@ -150,7 +157,6 @@ public class EvolveBot extends AdvancedRobot
 						workingValue/=eventValues[gene[i]-(staticCommands+4*eventValues.length)]; 
 					}
 					break;//otherwise, do nothing- junk rna
-				}
 			}
 		}
 	}
