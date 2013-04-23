@@ -181,9 +181,9 @@ class GeneticCode {
 		for(int i=0;i< gene.length();i+=2){
 			int command=Integer.parseInt(gene.substring(i,i+2), 16);
 			String value="";
-			if (GeneticCode.expectsFollowingValue(command)){
-				value=String.valueOf( Integer.parseInt( gene.substring(i,i+2) , 16) );
-				i+=2;				
+			if (GeneticCode.expectsFollowingValue(command) && i + 4 <= gene.length()){
+				value=String.valueOf( Integer.parseInt( gene.substring(i+2,i+4) , 16) );
+				i+=2;			
 			}
 			switch(command){
 			case 0:
