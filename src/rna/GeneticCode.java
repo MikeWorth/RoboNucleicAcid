@@ -147,7 +147,7 @@ class GeneticCode {
 						"public void run() {";
 		String[] eventValues={};
 		javaCode+=GeneToJava(genome[0], eventValues);
-		javaCode+="while(true){";
+		javaCode+="while(true){ahead(1);";
 		javaCode+=GeneToJava(genome[1], eventValues);
 		javaCode+="}}public void onScannedRobot(ScannedRobotEvent e) {";
 		String[] eventValues2={"e.getBearing()","e.getDistance()","e.getEnergy()","e.getHeading()","e.getVelocity()"};
@@ -256,30 +256,30 @@ class GeneticCode {
 				//javaCode+="setTurnRadarRight("+workingValue+");";
 				break;
 			case 22:
-				workingValue+="+"+value;
+				workingValue = "("+workingValue+"+"+value+")";
 				break;
 			case 23:
-				workingValue+="-"+value;
+				workingValue = "("+workingValue+"-"+value+")";
 				break;
 			case 24:
-				workingValue+="*"+value;
+				workingValue = "("+workingValue+"*"+value+")";
 				break;
 			case 25:
-				workingValue+="/"+value;
+				workingValue = "("+workingValue+"/"+value+")";
 				break;
 			case 26:
 				workingValue=value;
 				break;
 			case 27:
-				javaCode+="if !("+workingValue+">"+value+"){";
+				javaCode+="if (!("+workingValue+">"+value+")){";
 				loopDepth+=1;
 				break;
 			case 28:
-				javaCode+="if !("+workingValue+"<"+value+"){";
+				javaCode+="if (!("+workingValue+"<"+value+")){";
 				loopDepth+=1;
 				break;
 			case 29:
-				javaCode+="if !("+workingValue+"=="+value+"){";
+				javaCode+="if (!("+workingValue+"=="+value+")){";
 				loopDepth+=1;
 				break;
 			default:
@@ -287,13 +287,13 @@ class GeneticCode {
 				if(command<staticCommands+eventValues.length){
 					workingValue=eventValues[command-staticCommands]; 
 				}else if(command<staticCommands+2*eventValues.length){
-					workingValue="("+workingValue+")+"+eventValues[command-(staticCommands+eventValues.length)]; 
+					workingValue="("+workingValue+"+"+eventValues[command-(staticCommands+eventValues.length)]+")"; 
 				}else if(command<staticCommands+3*eventValues.length){
-					workingValue="("+workingValue+")+"+eventValues[command-(staticCommands+2*eventValues.length)]; 
+					workingValue="("+workingValue+"+"+eventValues[command-(staticCommands+2*eventValues.length)]+")"; 
 				}else if(command<staticCommands+4*eventValues.length){
-					workingValue="("+workingValue+")+"+eventValues[command-(staticCommands+3*eventValues.length)]; 
+					workingValue="("+workingValue+"+"+eventValues[command-(staticCommands+3*eventValues.length)]+")"; 
 				}else if(command<staticCommands+5*eventValues.length){
-					workingValue="("+workingValue+")+"+eventValues[command-(staticCommands+4*eventValues.length)]; 
+					workingValue="("+workingValue+"+"+eventValues[command-(staticCommands+4*eventValues.length)]+")"; 
 				}
 				break;//otherwise, do nothing- junk rna
 			}
