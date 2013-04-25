@@ -39,7 +39,7 @@ class ScoreKeeper extends BattleAdaptor {
 				int botIndex=Arrays.asList(botNames).indexOf(botName);
 				float weightedscore=(float)(1+battleScore[i])/(1+battleScore[0]+battleScore[1]);//Use this to differentiate between really shit and really really shit bots
 				
-				//Add selective pressure for genomes smaller than 250 bytes
+				//Add selective pressure to stop genomes growing too big
 				int genomeLength = botGenomes[botIndex].toString().length();
 				weightedscore = adjustForGenomeLength(weightedscore,genomeLength);
 				
@@ -50,10 +50,12 @@ class ScoreKeeper extends BattleAdaptor {
 	}
 	
 	private float adjustForGenomeLength(float basicScore,int genomeLength){
-		if (genomeLength > 250 ){
-			int extraBytes = genomeLength - 250;
-			System.out.println("Genome too big, genomeLength:"+genomeLength+" Penalty applied:"+Float.toString((float)extraBytes/1000));
-			 basicScore -= ((float)extraBytes/1000);
+		int maxLength = 500;
+		if (genomeLength > maxLength ){
+			int extraBytes = genomeLength - maxLength;
+			float penalty = (float)extraBytes/1000;
+			System.out.println("Genome too big, genomeLength:"+genomeLength+" Penalty applied:"+Float.toString(penalty));
+			 basicScore -= penalty;
 		}
 		return basicScore;
 	}
