@@ -23,7 +23,7 @@ public class RobotLeague {
 		scoreKeeper=new ScoreKeeper(botGenomes);
 		
 		RobocodeEngine engine = new RobocodeEngine((new File("robocode")));//TODO: automatically detect dir?
-		//engine.setVisible(true);
+		engine.setVisible(true);
 		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification();
 		engine.addBattleListener(scoreKeeper);
 		RobotSpecification[] pairing;

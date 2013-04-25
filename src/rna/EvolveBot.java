@@ -122,7 +122,7 @@ public class EvolveBot extends AdvancedRobot
 					workingValue=gene[++i];
 					break;
 				case 27:
-					if(workingValue>gene[i++]){
+					if(workingValue>gene[++i]){
 						//skip until we find a zero or fall off the end of the gene sequence
 						do{
 							i++;
@@ -130,14 +130,14 @@ public class EvolveBot extends AdvancedRobot
 					}
 					break;
 				case 28:
-					if(workingValue<gene[i++])
+					if(workingValue<gene[++i])
 						//skip until we find a zero or fall off the end of the gene sequence
 						do{
 							i++;
 						}while(i < gene.length && gene[i] != 0);
 					break;
 				case 29:
-					if(workingValue==gene[i++])
+					if(workingValue==gene[++i])
 						//skip until we find a zero or fall off the end of the gene sequence
 						do{
 							i++;
