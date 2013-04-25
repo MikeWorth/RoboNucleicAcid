@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Lineage {
 	
@@ -117,8 +116,7 @@ public class Lineage {
 	}
 	
 	private static String randomName(){
-		Random generator=new Random();
-		return names()[generator.nextInt(names().length)];
+		return names()[RobotBreeder.generator.nextInt(names().length)];
 		
 	}
 }

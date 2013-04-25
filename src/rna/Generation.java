@@ -1,7 +1,5 @@
 package rna;
 
-import java.util.Random;
-
 public class Generation {
 
 	private GeneticCode[] bots;
@@ -54,8 +52,7 @@ public class Generation {
 	}
 	
 	private GeneticCode getWeightedRandomBot(GeneticCode[] rankedBots){
-		int botCount = rankedBots.length;//This can be different from the size of the generation 
-		Random generator=new Random();
+		int botCount = rankedBots.length;//This can be different from the size of the generation
 		
 		int cumulativeProbabilities[]=new int[botCount];
 		int runningTotal=0;
@@ -66,7 +63,7 @@ public class Generation {
 			runningTotal=cumulativeProbabilities[i];
 		}
 		
-		double rnd=generator.nextInt(runningTotal);
+		double rnd=RobotBreeder.generator.nextInt(runningTotal);
 		for(int i=0;i<botCount;i++){
 			if (rnd<=cumulativeProbabilities[i])
 				return rankedBots[i];

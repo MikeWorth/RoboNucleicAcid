@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Random;
 
 /*
  * GeneticCodes are a series of strings detailing actions for each of the possible events
@@ -40,12 +39,11 @@ class GeneticCode {
 		botName=name;
 		lineage=new Lineage();
 		genome = new String[genomeLength];
-		Random generator=new Random();
 		for(int i=0;i<genomeLength;i++){
 			genome[i]="";
-			while(generator.nextDouble()<seedLength){
+			while(RobotBreeder.generator.nextDouble()<seedLength){
 				for(int j=0;j<4;j++){
-					String gene=Integer.toString(generator.nextInt(16),16);
+					String gene=Integer.toString(RobotBreeder.generator.nextInt(16),16);
 					genome[i]+=gene;
 				}
 			}
@@ -61,7 +59,6 @@ class GeneticCode {
 		lineage=new Lineage(parent1.getLineage(),parent2.getLineage());
 		
 		genome = new String[genomeLength];
-		Random generator=new Random();
 
 		for (int i=0; i<genomeLength;i++){
 			genome[i]="";
@@ -70,8 +67,8 @@ class GeneticCode {
 			//Occasionally get the 'wrong' Chromosome
 			String[] parentGenome = new String[2]; 
 			for(int j=0;j<2;j++){
-				if(generator.nextDouble()<mutationBreedSwapChromosomeRate){
-					parentGenome[j]=parent1.genome[generator.nextInt(genomeLength)];
+				if(RobotBreeder.generator.nextDouble()<mutationBreedSwapChromosomeRate){
+					parentGenome[j]=parent1.genome[RobotBreeder.generator.nextInt(genomeLength)];
 				}else{
 					parentGenome[j]=parent1.genome[i];
 				}
@@ -90,7 +87,7 @@ class GeneticCode {
 			
 			int chopPlace=0;
 			if (genomeSmall.length()>0)
-				chopPlace=generator.nextInt(genomeSmall.length());
+				chopPlace=RobotBreeder.generator.nextInt(genomeSmall.length());
 			
 			while((chopPlace % 2) != 0)
 				chopPlace-=1;
@@ -107,7 +104,7 @@ class GeneticCode {
 				secondBit=genomeLarge.substring(genomeLarge.length()-(avgLength-chopPlace));
 			
 			//Put them together, occasionally putting them back to front
-			if(generator.nextDouble()<mutationBreedWrongOrderRate){
+			if(RobotBreeder.generator.nextDouble()<mutationBreedWrongOrderRate){
 				genome[i] = secondBit + firstBit;
 			}else{
 				genome[i] = firstBit + secondBit;
@@ -305,22 +302,21 @@ class GeneticCode {
 	
 	//Apply small scale genetic mutations to the genome
 	void mutateSmallScale(){
-		//TODO: rewrite different mutations as independant?
-		Random generator=new Random();
+		//TODO: rewrite different mutations as independent?
 		for (int i=0; i<genomeLength;i++){
 
 			//Delete some bits
 			int numberOfDeletions=(int) (genome[i].length() * mutationSmallDeleteRate);//TODO: add a gausian for varying numbers of mutations
 			for(int j=0;j<numberOfDeletions;j++){
-				int mutationPosition=generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation
+				int mutationPosition=RobotBreeder.generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation
 				genome[i]=genome[i].substring(0,mutationPosition) + genome[i].substring(mutationPosition+2);
 			}
 			
 			//Add some bits
 			int numberOfAdditions=(int) (genome[i].length() * mutationSmallAddRate);//TODO: add a gausian for varying numbers of mutations
 			for(int j=0;j<numberOfAdditions;j++){
-				int mutationPosition=generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation				
-				String newBase=Integer.toHexString(generator.nextInt(256));
+				int mutationPosition=RobotBreeder.generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation				
+				String newBase=Integer.toHexString(RobotBreeder.generator.nextInt(256));
 				while(newBase.length()<2){
 					newBase="0"+newBase;
 				}
@@ -331,10 +327,10 @@ class GeneticCode {
 			//Change the value of some bits
 			int numberOfModifications=(int) (genome[i].length() * mutationSmallModifyRate);//TODO: add a gausian for varying numbers of mutations
 			for(int j=0;j<numberOfModifications;j++){
-				int mutationPosition=generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation
+				int mutationPosition=RobotBreeder.generator.nextInt(genome[i].length()-2);//This cannot be too close to the end; it's the start of the mutation
 				
 				int oldBaseVal = Integer.valueOf(genome[i].substring(mutationPosition,mutationPosition+2),16);
-				int newBaseVal= oldBaseVal + (int)(generator.nextGaussian()*mutationSmallModifyMagnitude);
+				int newBaseVal= oldBaseVal + (int)(RobotBreeder.generator.nextGaussian()*mutationSmallModifyMagnitude);
 				while (newBaseVal>255)newBaseVal-=256;//a gaussian has a very small but finite chance of being bloody miles away from 0
 				while (newBaseVal<0)newBaseVal+=256;
 
@@ -352,13 +348,12 @@ class GeneticCode {
 	}
 	
 	void mutateLargeScale(){
-		Random generator=new Random();
 		for (int i=0; i<genomeLength;i++){
 			//split the chromosome into pre,mutation,post. Potential for frame misalignment is intentional
 			int[] boundaries = new int[2];
 			if(genome[i].length()>0){
 				for(int j=0;j<2;j++){
-					boundaries[j]=generator.nextInt(genome[i].length()-1);//TODO: control relative positions of boundaries in some way?
+					boundaries[j]=RobotBreeder.generator.nextInt(genome[i].length()-1);//TODO: control relative positions of boundaries in some way?
 				}
 				Arrays.sort(boundaries);
 				
@@ -367,23 +362,23 @@ class GeneticCode {
 				String post=genome[i].substring(boundaries[1]);
 				
 				//only do at most one; this makes things a bit simpler and these probabilities coming up together is rare enough to make a negligible difference
-				if(generator.nextDouble()<mutationLargeDeleteRate){
+				if(RobotBreeder.generator.nextDouble()<mutationLargeDeleteRate){
 					//delete a chunk
 					genome[i]=pre + post;
-				}else if(generator.nextDouble()<mutationLargeReverseRate){
+				}else if(RobotBreeder.generator.nextDouble()<mutationLargeReverseRate){
 					//reverse order of bytes in chunk
 					String flippedMutation="";
 					for (int k=mutation.length()-1;k>=0;k--){
 						flippedMutation+=mutation.charAt(k);
 					}
 					genome[i] = pre + flippedMutation + post;
-				}else if(generator.nextDouble()<mutationLargeMoveRate){
+				}else if(RobotBreeder.generator.nextDouble()<mutationLargeMoveRate){
 					//move a chunk
 					StringBuffer genomeBuffer = new StringBuffer(pre + post);
-					int insertLocation=generator.nextInt(genomeBuffer.length()-1);
+					int insertLocation=RobotBreeder.generator.nextInt(genomeBuffer.length()-1);
 					genomeBuffer.insert(insertLocation, mutation);
 					genome[i]=genomeBuffer.toString();
-				}else if(generator.nextDouble()<mutationLargeRepeatRate){
+				}else if(RobotBreeder.generator.nextDouble()<mutationLargeRepeatRate){
 					//repeat chunk
 					genome[i]=pre + mutation + mutation + post;
 				}
