@@ -3,12 +3,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Random;
 
 public class RobotBreeder {
 	
 	private static int BOTCOUNT=50;//Don't make this larger than 50 without making more EB*.class
 	private static int CLOSESTALLOWEDINCEST=2;
 	private static int SeparationTime=1000;
+	
+	public static Random generator = new Random();
 	
 	private static String[] evolveBotNames(){
 		String names[] = new String[BOTCOUNT];
@@ -24,7 +27,9 @@ public class RobotBreeder {
 	
 	public static void main(String[] args) throws IOException{
 		
-
+		// seed RNG with command line value
+		generator = new Random(Integer.parseInt(args[0]));
+		
 		GeneticCode[] EvolvedA=BreedPopulation(SeparationTime,"Population0a");
 		GeneticCode[] EvolvedB=BreedPopulation(SeparationTime,"Population0b");
 
