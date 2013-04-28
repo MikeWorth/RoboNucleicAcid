@@ -12,6 +12,9 @@ import robocode.control.RobotSpecification;
 public class RobotLeague {
 	
 	private final static int rounds=10;
+	private final static int battlefieldWidth=800;
+	private final static int battlefieldHeight=600;
+	private final static boolean visibleBattles=true;
 	private ScoreKeeper scoreKeeper;
 	private int numberOfChallengers;
 	private GeneticCode[] botGenomes;
@@ -23,8 +26,8 @@ public class RobotLeague {
 		scoreKeeper=new ScoreKeeper(botGenomes);
 		
 		RobocodeEngine engine = new RobocodeEngine((new File("robocode")));//TODO: automatically detect dir?
-		//engine.setVisible(true);
-		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification();
+		engine.setVisible(visibleBattles);
+		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification(battlefieldWidth,battlefieldHeight);
 		engine.addBattleListener(scoreKeeper);
 		RobotSpecification[] pairing;
 		
@@ -36,7 +39,7 @@ public class RobotLeague {
 				for (int j=i+1;j<botGenomes.length;j++){
 					pairing=engine.getLocalRepository(botGenomes[i].getName()+","+botGenomes[j].getName());
 					BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield, pairing);
-					engine.runBattle(battleSpec,true);//TODO multithreading?
+					engine.runBattle(battleSpec, initialPositions(2), true);//TODO multithreading?
 					System.out.print('.');
 				}
 			}
@@ -47,7 +50,7 @@ public class RobotLeague {
 			for (int j=0;j<botGenomes.length;j++){
 				pairing=engine.getLocalRepository(yardstickBots[i]+","+botGenomes[j].getName());
 				BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield ,pairing);
-				engine.runBattle(battleSpec,true);//TODO multithreading?
+				engine.runBattle(battleSpec,initialPositions(2),true);//TODO multithreading?
 				System.out.print('.');
 			}				
 		}
@@ -78,5 +81,18 @@ public class RobotLeague {
 		}
 		
 	}
+
+	private String initialPositions(int bots){
+		String initialPositions="";
+		
+		for (int i=0; i< bots; i++){
+			initialPositions+= Integer.toString(RobotBreeder.generator.nextInt(battlefieldWidth)) + ",";
+			initialPositions+= Integer.toString(RobotBreeder.generator.nextInt(battlefieldHeight)) + ",";
+			initialPositions+= Integer.toString(RobotBreeder.generator.nextInt(360)) + ",";
+		}
+		return initialPositions;
+	}
+
+
 	
 }
