@@ -16,8 +16,10 @@ class ScoreKeeper extends BattleAdaptor {
 	String[] botNames;
 	GeneticCode[] botGenomes;
 	int botCount;
-	float[] scoreWeightings = new float[8];
-	boolean scoresAsFractionOfTotal;
+
+	//Start off using default total score
+	static float[] scoreWeightings = {1,0,0,0,0,0,0,0};
+	static boolean scoresAsFractionOfTotal=true;
 	
 	public ScoreKeeper(GeneticCode[] bots){
 		botGenomes=bots;
@@ -29,16 +31,6 @@ class ScoreKeeper extends BattleAdaptor {
 			scores.add(new RobotScore(botNames[i]));
 
 		}
-		scoresAsFractionOfTotal=true;
-		//Start off using default total score
-		scoreWeightings[0]=1;
-		scoreWeightings[1]=0;
-		scoreWeightings[2]=0;
-		scoreWeightings[3]=0;
-		scoreWeightings[4]=0;
-		scoreWeightings[5]=0;
-		scoreWeightings[6]=0;
-		scoreWeightings[7]=0;
 	}
 
 	public void onBattleCompleted(BattleCompletedEvent e){
@@ -95,7 +87,7 @@ class ScoreKeeper extends BattleAdaptor {
 	 * ram damage kill bonus
 	 * number of rounds won
 	 */
-	public void alterScoreWeightings(float[] newWeightings){
+	public static void alterScoreWeightings(float[] newWeightings){
 		if (newWeightings.length==scoreWeightings.length){
 			scoreWeightings=newWeightings;
 		}else{
@@ -103,7 +95,7 @@ class ScoreKeeper extends BattleAdaptor {
 		}
 	}
 	
-	public void setScoresAsFractionOfTotal(boolean newSetting){
+	public static void setScoresAsFractionOfTotal(boolean newSetting){
 		scoresAsFractionOfTotal=newSetting;
 	}
 	
