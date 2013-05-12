@@ -17,6 +17,7 @@ class ScoreKeeper extends BattleAdaptor {
 	GeneticCode[] botGenomes;
 	int botCount;
 	float[] scoreWeightings = new float[8];
+	boolean scoresAsFractionOfTotal;
 	
 	public ScoreKeeper(GeneticCode[] bots){
 		botGenomes=bots;
@@ -28,6 +29,7 @@ class ScoreKeeper extends BattleAdaptor {
 			scores.add(new RobotScore(botNames[i]));
 
 		}
+		scoresAsFractionOfTotal=true;
 		//Start off using default total score
 		scoreWeightings[0]=1;
 		scoreWeightings[1]=0;
@@ -48,7 +50,14 @@ class ScoreKeeper extends BattleAdaptor {
 			String botName=result.getTeamLeaderName();
 			if(Arrays.asList(botNames).contains(botName)){
 				int botIndex=Arrays.asList(botNames).indexOf(botName);
-				float weightedscore=(float)(1+battleScore[i])/(1+battleScore[0]+battleScore[1]);//Use this to differentiate between really shit and really really shit bots
+				
+				//TODO: this is ugly; rewrite it in a more sensible way
+				float weightedscore;
+				if(scoresAsFractionOfTotal){
+					weightedscore=(float)(1+battleScore[i])/(1+battleScore[0]+battleScore[1]);//Use this to differentiate between really shit and really really shit bots
+				}else{
+					weightedscore=battleScore[i];
+				}
 				
 				//Add selective pressure to stop genomes growing too big
 				int genomeLength = botGenomes[botIndex].toString().length();
@@ -86,12 +95,16 @@ class ScoreKeeper extends BattleAdaptor {
 	 * ram damage kill bonus
 	 * number of rounds won
 	 */
-	private void alterScoreWeightings(float[] newWeightings){
+	public void alterScoreWeightings(float[] newWeightings){
 		if (newWeightings.length==scoreWeightings.length){
 			scoreWeightings=newWeightings;
 		}else{
 			System.err.println("Weightings array wrong length, weightings not updated");
 		}
+	}
+	
+	public void setScoresAsFractionOfTotal(boolean newSetting){
+		scoresAsFractionOfTotal=newSetting;
 	}
 	
 	private float adjustForGenomeLength(float basicScore,int genomeLength){
