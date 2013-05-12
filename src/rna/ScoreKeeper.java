@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import robocode.BattleResults;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
 
@@ -15,6 +16,7 @@ class ScoreKeeper extends BattleAdaptor {
 	String[] botNames;
 	GeneticCode[] botGenomes;
 	int botCount;
+	float[] scoreWeightings = new float[8];
 	
 	public ScoreKeeper(GeneticCode[] bots){
 		botGenomes=bots;
@@ -26,12 +28,21 @@ class ScoreKeeper extends BattleAdaptor {
 			scores.add(new RobotScore(botNames[i]));
 
 		}
+		//Start off using default total score
+		scoreWeightings[0]=1;
+		scoreWeightings[1]=0;
+		scoreWeightings[2]=0;
+		scoreWeightings[3]=0;
+		scoreWeightings[4]=0;
+		scoreWeightings[5]=0;
+		scoreWeightings[6]=0;
+		scoreWeightings[7]=0;
 	}
 
 	public void onBattleCompleted(BattleCompletedEvent e){
-		int[] battleScore=new int[2];
-		battleScore[0]=e.getIndexedResults()[0].getScore();
-		battleScore[1]=e.getIndexedResults()[1].getScore();
+		float[] battleScore=new float[2];
+		battleScore[0]=calculateScore(e.getIndexedResults()[0]);
+		battleScore[1]=calculateScore(e.getIndexedResults()[1]);
 		for (int i=0;i<2;i++){
 			robocode.BattleResults result=e.getIndexedResults()[i];
 			String botName=result.getTeamLeaderName();
@@ -42,10 +53,44 @@ class ScoreKeeper extends BattleAdaptor {
 				//Add selective pressure to stop genomes growing too big
 				int genomeLength = botGenomes[botIndex].toString().length();
 				weightedscore = adjustForGenomeLength(weightedscore,genomeLength);
-				
+
 				scores.get(botIndex).addPoints(weightedscore);
 			}
 
+		}
+	}
+	
+	private float calculateScore(BattleResults result){
+		float total=0;
+		
+		total+= scoreWeightings[0] * result.getScore();
+		total+= scoreWeightings[1] * result.getSurvival();
+		total+= scoreWeightings[2] * result.getLastSurvivorBonus();
+		total+= scoreWeightings[3] * result.getBulletDamage();
+		total+= scoreWeightings[4] * result.getBulletDamageBonus();
+		total+= scoreWeightings[5] * result.getRamDamage();//TODO: has this already been doubled?
+		total+= scoreWeightings[6] * result.getRamDamageBonus();
+		total+= scoreWeightings[7] * result.getFirsts();
+		
+		return total;
+	}
+
+	/*
+	 * Score weightings are an array of coefficients for (in order):
+	 * default robocode total score
+	 * survival bonus
+	 * last surviver bonus
+	 * bullet damage
+	 * bullet damage kill bonus
+	 * ram damage
+	 * ram damage kill bonus
+	 * number of rounds won
+	 */
+	private void alterScoreWeightings(float[] newWeightings){
+		if (newWeightings.length==scoreWeightings.length){
+			scoreWeightings=newWeightings;
+		}else{
+			System.err.println("Weightings array wrong length, weightings not updated");
 		}
 	}
 	
