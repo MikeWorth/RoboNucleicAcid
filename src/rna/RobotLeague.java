@@ -55,17 +55,25 @@ public class RobotLeague {
 		engine.close();
 		//A newline after the series of dots for each battle, otherwise we run the next output onto it
 		System.out.print('\n');
+		
+		//commit scores to the bots
+		for(int i=0;i<botGenomes.length;i++){
+			botGenomes[i].setScore(getScore(botGenomes[i]));
+			//System.out.println("Saved score for"+botGenomes[i].getName()+" of "+getScore(botGenomes[i]));
+		}
+		
 	}
 
 	public GeneticCode[] getChallengersInOrder(){
 		return scoreKeeper.getBotsInOrder();
 	}
 	
-	public int getScore(GeneticCode bot){
+	private int getScore(GeneticCode bot){
 		return scoreKeeper.getScorePercentage(bot);
 	}
 	
 	public int getAverageScore(){
+		System.err.println("Warning: depreciated, use GeneticCode.getScore and calculate the average yourself");
 		int runningTotal=0;
 		for(int i=0;i<numberOfChallengers;i++){
 			runningTotal+=scoreKeeper.getScorePercentage(botGenomes[i]);

@@ -18,8 +18,8 @@ class ScoreKeeper extends BattleAdaptor {
 	int botCount;
 
 	//Start off using default total score
-	static float[] scoreWeightings = {1,0,0,0,0,0,0,0};
-	static boolean scoresAsFractionOfTotal=true;
+	private static float[] scoreWeightings = {1,0,0,0,0,0,0,0};
+	private static boolean scoresAsFractionOfTotal=true;
 	
 	public ScoreKeeper(GeneticCode[] bots){
 		botGenomes=bots;
@@ -46,7 +46,7 @@ class ScoreKeeper extends BattleAdaptor {
 				//TODO: this is ugly; rewrite it in a more sensible way
 				float weightedscore;
 				if(scoresAsFractionOfTotal){
-					weightedscore=(float)(1+battleScore[i])/(1+battleScore[0]+battleScore[1]);//Use this to differentiate between really shit and really really shit bots
+					weightedscore=(1+battleScore[i])/(1+battleScore[0]+battleScore[1]);//Use this to differentiate between really shit and really really shit bots
 				}else{
 					weightedscore=battleScore[i];
 				}

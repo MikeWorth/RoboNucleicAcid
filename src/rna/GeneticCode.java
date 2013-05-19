@@ -20,6 +20,8 @@ class GeneticCode {
 	private String botName;
 	private Lineage lineage;	
 	private static double seedLength=0.9;//this is the chance of adding an additional command to the seed genes; it iterates until it gets lower than this value
+	private int score;
+	private boolean scoreSet=false;
 	
 	//These could be placed into the appropriate methods, but having them here makes tweaking easier. I think the difference is compiled out anyway
 	private static double mutationBreedSwapChromosomeRate=0.01;//This is the probability that the 'wrong' string will be picked from a genome when breeding 
@@ -443,5 +445,19 @@ class GeneticCode {
 				(instruction==28) ||	
 				(instruction==29) ||	
 		false);//false is here to make above lines all end with ||
+	}
+	
+	public void setScore(int newScore){
+		score=newScore;
+		scoreSet=true;
+	}
+	
+	public int getScore(){
+		if(scoreSet){
+			return score;
+		}else{
+			System.err.println("Error: fetching unset score");
+			return 0;
+		}
 	}
 }

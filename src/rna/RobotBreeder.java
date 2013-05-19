@@ -9,7 +9,7 @@ public class RobotBreeder {
 	
 	private static int BOTCOUNT=50;//Don't make this larger than 50 without making more EB*.class
 	private static int CLOSESTALLOWEDINCEST=2;
-	private static int SeparationTime=1000;
+	private static int SeparationTime=100;
 	
 	public static Random generator = new Random();
 	
@@ -32,6 +32,12 @@ public class RobotBreeder {
 		
 		GeneticCode[] EvolvedA=BreedPopulation(SeparationTime,"Population0a");
 		GeneticCode[] EvolvedB=BreedPopulation(SeparationTime,"Population0b");
+		
+		//Start off by evolving something basic
+		int goalpostMoves=0;
+		float[] weightings={1,0,0,0,0,0,0,0};
+		ScoreKeeper.alterScoreWeightings(weightings);
+		ScoreKeeper.setScoresAsFractionOfTotal(true);
 
 		for(int population=1;true;population++){
 			
@@ -54,7 +60,21 @@ public class RobotBreeder {
 			String popBLog="Population"+String.valueOf(population)+"b";
 			 EvolvedB = BreedPopulation(SeparationTime,popBLog ,populationB );
 			
-			
+			//when we have the beginnings of something vaguely sensible, concentrate on shooting
+			 float averageScore = 0;
+			 for (int j=0;j<BOTCOUNT;j++){
+				 averageScore+=EvolvedA[j].getScore();
+				 averageScore+=EvolvedB[j].getScore();
+			 }
+			 averageScore/=BOTCOUNT*2;
+			 if (goalpostMoves==0 && averageScore > 15){
+				 goalpostMoves=1;
+				 weightings[0]=1;
+				 weightings[4]=2;
+				ScoreKeeper.alterScoreWeightings(weightings);
+				ScoreKeeper.setScoresAsFractionOfTotal(false);
+				System.out.println("Moved goalposts, now looking for good shooting");
+			 }
 		}
 		
 	}
@@ -81,8 +101,13 @@ public class RobotBreeder {
 			System.out.println("Fighting took:" + Double.valueOf((System.currentTimeMillis() - fightingStartTime)/1000) + "s");
 			
 			GeneticCode winner=rankedBots[0];
-			int winnerScore=league.getScore(winner);
-			int averageScore=league.getAverageScore();
+			int winnerScore=winner.getScore();
+			
+			int averageScore=0;
+			for(int i=0;i<rankedBots.length;i++){
+				averageScore+=rankedBots[i].getScore();
+			}
+			averageScore/=rankedBots.length;
 			
 			System.out.println(winner.getName() + "(" + winner.getPersonifiedName() + ") wins generation " + String.valueOf(generation) + "!");
 			
@@ -107,7 +132,8 @@ public class RobotBreeder {
 			logLine += winnerScore + ",";
 			logLine += averageScore + ",";
 			logLine += String.valueOf(currentGeneration.getAverageCousinality()) + ",";
-			logLine += String.valueOf(generationTime);
+			logLine += String.valueOf(generationTime) +",";
+			logLine += String.valueOf(winner.toString().length());
 			log.println(logLine);
 			log.flush();
 			
