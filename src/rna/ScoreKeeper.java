@@ -18,8 +18,9 @@ class ScoreKeeper extends BattleAdaptor {
 	int botCount;
 
 	//Start off using default total score
-	static float[] scoreWeightings = {1,0,0,0,0,0,0,0};
-	static boolean scoresAsFractionOfTotal=true;
+	private static float[] scoreWeightings = {1,0,0,0,0,0,0,0};
+	private static boolean scoresAsFractionOfTotal=true;
+	private static int maxGenomeLength;
 	
 	public ScoreKeeper(GeneticCode[] bots){
 		botGenomes=bots;
@@ -99,13 +100,21 @@ class ScoreKeeper extends BattleAdaptor {
 		scoresAsFractionOfTotal=newSetting;
 	}
 	
+	public static void setMaxGenomeLength(int newLength){
+		maxGenomeLength=newLength;
+	}
+	
+	public static int getMaxGenomeLength(){
+		return maxGenomeLength;
+	}
+	
 	private float adjustForGenomeLength(float basicScore,int genomeLength){
-		int maxLength = 500;
-		if (genomeLength > maxLength ){
-			int extraBytes = genomeLength - maxLength;
-			float penalty = (float)extraBytes/1000;
-			System.out.println("Genome too big, genomeLength:"+genomeLength+" Penalty applied:"+Float.toString(penalty));
-			 basicScore -= penalty;
+		if (genomeLength > maxGenomeLength ){
+			int extraBytes = genomeLength - maxGenomeLength;
+			float penaltyProportion = (float)extraBytes/maxGenomeLength;
+			penaltyProportion = Math.min(penaltyProportion,1);//Don't allow more than all the points to be taken away
+			System.out.println("Genome too big, genomeLength:"+genomeLength+" Basic Score:" + Float.toString(basicScore) + "Penalty applied:"+Float.toString(penaltyProportion));
+			 basicScore -= penaltyProportion * basicScore;
 		}
 		return basicScore;
 	}

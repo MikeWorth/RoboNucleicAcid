@@ -9,7 +9,18 @@ public class RobotBreeder {
 
 	private static int BOTCOUNT=50;//Don't make this larger than 50 without making more EB*.class
 	private static int CLOSESTALLOWEDINCEST=2;
-
+	
+	private static int FEASTMAXLENGTH=5000;
+	private static int FAMINEMAXLENGTH=500;
+	private static int FEASTDURATION=1000;
+	private static int FAMINEDURATION=1000;
+	private static int FFTRANSITIONRATE=10;//this is the amount that the max length will change per generation
+	
+	private static int feastGenerationsRemaining = FEASTDURATION;//start with a feast period
+	private static int famineGenerationsRemaining = 0;
+	private static boolean transitionToFamine = false;
+	private static boolean transitionToFeast = false;
+	
 	public static Random generator = new Random();
 
 	private static String[] evolveBotNames(){
@@ -21,6 +32,7 @@ public class RobotBreeder {
 	}
 
 	private static String[] manualBotNames={
+		"supersample.SuperSpinBot*",
 		"sample.SpinBot"
 	};		
 
@@ -28,6 +40,7 @@ public class RobotBreeder {
 
 		// seed RNG with command line value
 		generator = new Random(Integer.parseInt(args[0]));
+		ScoreKeeper.setMaxGenomeLength(FEASTMAXLENGTH);
 
 		Generation currentGeneration = new Generation(evolveBotNames());
 
@@ -72,7 +85,9 @@ public class RobotBreeder {
 			logLine += winnerScore + ",";
 			logLine += averageScore + ",";
 			logLine += String.valueOf(currentGeneration.getAverageCousinality()) + ",";
-			logLine += String.valueOf(generationTime);
+			logLine += String.valueOf(generationTime) + ",";
+			logLine += String.valueOf(winner.toString().length()) + ",";
+			logLine += String.valueOf(ScoreKeeper.getMaxGenomeLength());
 			log.println(logLine);
 			log.flush();
 
@@ -87,6 +102,40 @@ public class RobotBreeder {
 			double breedingStartTime=System.currentTimeMillis();
 			currentGeneration = new Generation(evolveBotNames(),rankedBots,CLOSESTALLOWEDINCEST);
 			System.out.println("Breeding took:" + Double.valueOf((System.currentTimeMillis() - breedingStartTime)/1000) + "s");
+			
+			if (feastGenerationsRemaining>0){
+				if(--feastGenerationsRemaining==0){
+					transitionToFamine=true;
+				}
+			}
+
+			if (famineGenerationsRemaining>0){
+				if(--famineGenerationsRemaining==0){
+					transitionToFeast=true;
+				}
+			}
+			
+			if (transitionToFamine){
+				int newLength=ScoreKeeper.getMaxGenomeLength() - FFTRANSITIONRATE;
+				
+				if(newLength<=FAMINEMAXLENGTH){
+					newLength=FAMINEMAXLENGTH;
+					transitionToFamine=false;
+					famineGenerationsRemaining=FAMINEDURATION;
+				}
+				ScoreKeeper.setMaxGenomeLength(newLength);
+			}
+
+			if (transitionToFeast){
+				int newLength=ScoreKeeper.getMaxGenomeLength() + FFTRANSITIONRATE;
+				
+				if(newLength>=FEASTMAXLENGTH){
+					newLength=FEASTMAXLENGTH;
+					transitionToFeast=false;
+					feastGenerationsRemaining=FEASTDURATION;
+				}
+				ScoreKeeper.setMaxGenomeLength(newLength);
+			}
 
 		}
 	}

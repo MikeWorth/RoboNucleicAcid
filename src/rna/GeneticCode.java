@@ -19,13 +19,13 @@ class GeneticCode {
 	private String[] genome;
 	private String botName;
 	private Lineage lineage;	
-	private static double seedLength=0.9;//this is the chance of adding an additional command to the seed genes; it iterates until it gets lower than this value
+	private static double seedLength=0.99;//this is the chance of adding an additional command to the seed genes; it iterates until it gets lower than this value
 	
 	//These could be placed into the appropriate methods, but having them here makes tweaking easier. I think the difference is compiled out anyway
 	private static double mutationBreedSwapChromosomeRate=0.01;//This is the probability that the 'wrong' string will be picked from a genome when breeding 
 	private static double mutationBreedWrongOrderRate=0.01;//This is the probability that the beginning and end taken from the parents will be assembled the wrong way round when breeding
 	private static double mutationSmallDeleteRate=0.001;
-	private static double mutationSmallAddRate=0.001;
+	private static double mutationSmallAddRate=0.01;//this being higher will expand genomes to grow up to the limit imposed
 	private static double mutationSmallModifyRate=0.001;
 	private static double mutationSmallModifyMagnitude=20;
 	private static double mutationLargeDeleteRate=0.01;
