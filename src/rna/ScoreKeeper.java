@@ -113,8 +113,7 @@ class ScoreKeeper extends BattleAdaptor {
 			int extraBytes = genomeLength - maxGenomeLength;
 			float penaltyProportion = (float)extraBytes/maxGenomeLength;
 			penaltyProportion = Math.min(penaltyProportion,1);//Don't allow more than all the points to be taken away
-			System.out.println("Genome too big, genomeLength:"+genomeLength+" Basic Score:" + Float.toString(basicScore) + "Penalty applied:"+Float.toString(penaltyProportion));
-			 basicScore -= penaltyProportion * basicScore;
+			basicScore -= penaltyProportion * basicScore;
 		}
 		return basicScore;
 	}

@@ -25,7 +25,7 @@ class GeneticCode {
 	private static double mutationBreedSwapChromosomeRate=0.01;//This is the probability that the 'wrong' string will be picked from a genome when breeding 
 	private static double mutationBreedWrongOrderRate=0.01;//This is the probability that the beginning and end taken from the parents will be assembled the wrong way round when breeding
 	private static double mutationSmallDeleteRate=0.001;
-	private static double mutationSmallAddRate=0.01;//this being higher will expand genomes to grow up to the limit imposed
+	private static double mutationSmallAddRate=0.002;//this being higher will expand genomes to grow up to the limit imposed
 	private static double mutationSmallModifyRate=0.001;
 	private static double mutationSmallModifyMagnitude=20;
 	private static double mutationLargeDeleteRate=0.01;

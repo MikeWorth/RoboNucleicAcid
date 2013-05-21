@@ -11,7 +11,7 @@ import robocode.control.RobotSpecification;
 
 public class RobotLeague {
 	
-	private final static int rounds=10;
+	private final static int rounds=3;
 	private ScoreKeeper scoreKeeper;
 	private int numberOfChallengers;
 	private GeneticCode[] botGenomes;
