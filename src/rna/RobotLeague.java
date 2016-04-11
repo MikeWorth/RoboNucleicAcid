@@ -15,6 +15,7 @@ public class RobotLeague {
 	private ScoreKeeper scoreKeeper;
 	private int numberOfChallengers;
 	private GeneticCode[] botGenomes;
+	private boolean VisibleBattles = false;
 	
 	public RobotLeague(Generation generation,String[] yardstickBots,boolean interChallengerBattles) throws FileNotFoundException, UnsupportedEncodingException{
 		
@@ -23,7 +24,7 @@ public class RobotLeague {
 		scoreKeeper=new ScoreKeeper(botGenomes);
 		
 		RobocodeEngine engine = new RobocodeEngine((new File("robocode")));//TODO: automatically detect dir?
-		//engine.setVisible(true);
+		engine.setVisible(VisibleBattles);
 		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification();
 		engine.addBattleListener(scoreKeeper);
 		RobotSpecification[] pairing;
