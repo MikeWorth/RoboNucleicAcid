@@ -21,6 +21,8 @@ public class RobotBreeder {
 	private static boolean transitionToFamine = false;
 	private static boolean transitionToFeast = false;
 	
+	private static String LogfileName="RNA log.csv";
+
 	public static Random generator = new Random();
 
 	private static String[] evolveBotNames(){
@@ -44,7 +46,11 @@ public class RobotBreeder {
 
 		Generation currentGeneration = new Generation(evolveBotNames());
 
-		PrintWriter log = new PrintWriter("RNA log.csv");
+		PrintWriter log = new PrintWriter(LogfileName);
+
+		String logHeaderRow="\"Generation number\",\"Winning robot\",\"Winner Name\",\"Winning score\",\"Generation average score\",\"Generation average cousinality\",\"Generation time/s\",\"Winning genome length\",\"Maximum allowed genome length\"";
+		log.println(logHeaderRow);
+		log.flush();
 
 		double generationTimer=System.currentTimeMillis();
 		GeneticCode[] rankedBots=new GeneticCode[currentGeneration.getBots().length];
@@ -85,7 +91,7 @@ public class RobotBreeder {
 			logLine += winnerScore + ",";
 			logLine += averageScore + ",";
 			logLine += String.valueOf(currentGeneration.getAverageCousinality()) + ",";
-			logLine += String.valueOf(generationTime) + ",";
+			logLine += String.valueOf(generationTime/1000) + ",";
 			logLine += String.valueOf(winner.toString().length()) + ",";
 			logLine += String.valueOf(ScoreKeeper.getMaxGenomeLength());
 			log.println(logLine);
