@@ -100,10 +100,6 @@ public class RobotBreeder {
 
 			//Save copies of the winning bot for external evaluation/analysis
 			rankedBots[0].commitToRobot("EvolveBot",false);//put the winner here for external viewing
-			String genString=String.valueOf(generation);
-			while(genString.length()<6)
-				genString="0"+genString;
-			rankedBots[0].commitToRobot("winner"+genString,true);//These bots don't exist, but it will save a copy of the genomes regardless
 
 			double breedingStartTime=System.currentTimeMillis();
 			currentGeneration = new Generation(evolveBotNames(),rankedBots,CLOSESTALLOWEDINCEST);

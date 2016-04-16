@@ -9,9 +9,10 @@ import java.util.List;
 
 public class Lineage {
 	
-	private List<Lineage> ancestors=new ArrayList<Lineage>();
+	private List<Lineage> parents=new ArrayList<Lineage>(2);
 	private String name;
-	
+	private static int NumberOfPreviousGenerationsToRemember=10; //Keeping thousands of generations starts to gum things up
+
 	private static String[] names() {
 		FileReader nameFile=null;
 		try {
@@ -47,8 +48,10 @@ public class Lineage {
 
 	public Lineage(Lineage parent1,Lineage parent2){
 		name = randomName();
-		ancestors.add(parent1);
-		ancestors.add(parent2);
+		parents.add(parent1);
+		parents.add(parent2);
+
+		pruneFamilyTree (NumberOfPreviousGenerationsToRemember);//We don't do anything with them, so delete them to prevent ever-increasing storage of crap
 	}
 	
 	/*
@@ -63,17 +66,17 @@ public class Lineage {
 		if(currentDepth==maxDepth-1)
 			return maxDepth;
 		
-		if(line1.ancestors.size()==0 || line2.ancestors.size()==0)
+		if(line1.parents.size()==0 || line2.parents.size()==0)
 			return maxDepth;
 		
-		if (line1.ancestors.get(0)==line2.ancestors.get(0) && line1.ancestors.get(1)==line2.ancestors.get(1)){
+		if (line1.parents.get(0)==line2.parents.get(0) && line1.parents.get(1)==line2.parents.get(1)){
 			return 0;
 		}else{
 			
 			int closestRelationship=maxDepth-1;
 			for(int i=0;i<2;i++){
 				for(int j=0;j<2;j++){
-					closestRelationship=Math.min(closestRelationship ,getCousinality(line1.ancestors.get(i), line2.ancestors.get(j),maxDepth,currentDepth+1));
+					closestRelationship=Math.min(closestRelationship ,getCousinality(line1.parents.get(i), line2.parents.get(j),maxDepth,currentDepth+1));
 				}
 			}
 			return closestRelationship + 1; 
@@ -97,11 +100,11 @@ public class Lineage {
 
 		Lineage father;
 		Lineage grandFather;
-		if(ancestors.size()>=1){
-			father=ancestors.get(0);
+		if(parents.size()>=1){
+			father=parents.get(0);
 			longName+= sonOf + father.name;
-			if(father.ancestors.size()>=1){
-				grandFather=father.ancestors.get(0);
+			if(father.parents.size()>=1){
+				grandFather=father.parents.get(0);
 				longName+=grandsonOf+ grandFather.name;
 			}
 		}
@@ -118,5 +121,15 @@ public class Lineage {
 	private static String randomName(){
 		return names()[RobotBreeder.generator.nextInt(names().length)];
 		
+	}
+
+	private void pruneFamilyTree (int depth){
+		if (depth==0){
+			parents=new ArrayList<Lineage>();//overwrite ancestors list with nothing
+		}else{
+			for (Lineage parent : parents){
+				parent.pruneFamilyTree(depth-1);
+			}
+		}
 	}
 }
