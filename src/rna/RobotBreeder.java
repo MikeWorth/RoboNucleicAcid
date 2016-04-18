@@ -99,7 +99,7 @@ public class RobotBreeder {
 
 
 			//Save copies of the winning bot for external evaluation/analysis
-			rankedBots[0].commitToRobot("EvolveBot",false);//put the winner here for external viewing
+			winner.commitToRobot("EvolveBot",false);//put the winner here for external viewing
 
 			double breedingStartTime=System.currentTimeMillis();
 			currentGeneration = new Generation(evolveBotNames(),rankedBots,CLOSESTALLOWEDINCEST);
