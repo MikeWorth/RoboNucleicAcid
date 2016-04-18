@@ -11,11 +11,9 @@ import robocode.control.RobotSpecification;
 
 public class RobotLeague {
 	
-	private final static int rounds=3;
 	private ScoreKeeper scoreKeeper;
 	private int numberOfChallengers;
 	private GeneticCode[] botGenomes;
-	private boolean VisibleBattles = false;
 	
 	public RobotLeague(Generation generation,String[] yardstickBots,boolean interChallengerBattles) throws FileNotFoundException, UnsupportedEncodingException{
 		
@@ -23,22 +21,15 @@ public class RobotLeague {
 		numberOfChallengers=botGenomes.length;//TODO is this a good thing?
 		scoreKeeper=new ScoreKeeper(botGenomes);
 		
-		RobocodeEngine engine = new RobocodeEngine((new File("robocode")));//TODO: automatically detect dir?
-		engine.setVisible(VisibleBattles);
-		BattlefieldSpecification defaultBattlefield = new BattlefieldSpecification();
-		engine.addBattleListener(scoreKeeper);
-		RobotSpecification[] pairing;
-		
 		commitToBots();
 		
 		//run interchallenger battles
 		if(interChallengerBattles){
 			for(int i=0; i<botGenomes.length;i++){
 				for (int j=i+1;j<botGenomes.length;j++){
-					pairing=engine.getLocalRepository(botGenomes[i].getName()+","+botGenomes[j].getName());
-					BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield, pairing);
-					engine.runBattle(battleSpec,true);//TODO multithreading?
-					System.out.print('.');
+					String pairingString=botGenomes[i].getName()+","+botGenomes[j].getName();
+					RobotBattle battle = new RobotBattle(pairingString,scoreKeeper);
+					battle.run();
 				}
 			}
 		}
@@ -46,14 +37,11 @@ public class RobotLeague {
 		//Now make each challengerBot fight each yardstickBot 
 		for(int i=0;i<yardstickBots.length;i++){
 			for (int j=0;j<botGenomes.length;j++){
-				pairing=engine.getLocalRepository(yardstickBots[i]+","+botGenomes[j].getName());
-				BattleSpecification battleSpec = new BattleSpecification(rounds, defaultBattlefield ,pairing);
-				engine.runBattle(battleSpec,true);//TODO multithreading?
-				System.out.print('.');
+				String pairingString=yardstickBots[i]+","+botGenomes[j].getName();
+				RobotBattle battle = new RobotBattle(pairingString,scoreKeeper);
+				battle.run();
 			}				
 		}
-		engine.removeBattleListener(scoreKeeper);//If I don't remove this here it hangs around somehow and the nth generation counts the scores n times
-		engine.close();
 		//A newline after the series of dots for each battle, otherwise we run the next output onto it
 		System.out.print('\n');
 	}
