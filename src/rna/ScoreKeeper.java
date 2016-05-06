@@ -1,19 +1,15 @@
 package rna;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import robocode.BattleResults;
 import robocode.control.events.BattleAdaptor;
 import robocode.control.events.BattleCompletedEvent;
 
 class ScoreKeeper extends BattleAdaptor {
 	
-	List<RobotScore> scores;
+	float[] scores;
 	String[] botNames;
+	int[] botGenomeLengths;
 	GeneticCode[] botGenomes;
 	int botCount;
 
@@ -22,16 +18,11 @@ class ScoreKeeper extends BattleAdaptor {
 	private static boolean scoresAsFractionOfTotal=true;
 	private static int maxGenomeLength;
 	
-	public ScoreKeeper(GeneticCode[] bots){
-		botGenomes=bots;
-		botCount=botGenomes.length;
-		botNames=new String[botCount];
-		scores = new ArrayList<RobotScore>();
-		for(int i=0;i<botCount;i++){
-			botNames[i]=bots[i].getName();
-			scores.add(new RobotScore(botNames[i]));
-
-		}
+	public ScoreKeeper(String[] names, int[] genomeLengths){
+		botNames=names;
+		botGenomeLengths=genomeLengths;
+		botCount=botNames.length;
+		scores = new float[botCount];
 	}
 
 	public void onBattleCompleted(BattleCompletedEvent e){
@@ -53,13 +44,16 @@ class ScoreKeeper extends BattleAdaptor {
 				}
 				
 				//Add selective pressure to stop genomes growing too big
-				int genomeLength = botGenomes[botIndex].toString().length();
-				weightedscore = adjustForGenomeLength(weightedscore,genomeLength);
+				weightedscore = adjustForGenomeLength(weightedscore,botGenomeLengths[botIndex]);
 
-				scores.get(botIndex).addPoints(weightedscore);
+				scores[botIndex] = weightedscore;
 			}
 
 		}
+	}
+	
+	public float[] getScores(){
+		return scores;
 	}
 	
 	private float calculateScore(BattleResults result){
@@ -118,65 +112,5 @@ class ScoreKeeper extends BattleAdaptor {
 		return basicScore;
 	}
 	
-	public GeneticCode[] getBotsInOrder(){
-		RobotScoreComparator comparator=new RobotScoreComparator();
-		Collections.sort(scores,comparator);
-		GeneticCode[] botsInOrder=new GeneticCode[botCount];
-		
-		int i=0;
-		for(RobotScore score:scores){
-			int botIndex=Arrays.asList(botNames).indexOf(score.getName());
-			botsInOrder[i]=botGenomes[botIndex];
-			i++;
-		}
-		return botsInOrder;
-	}
-	
-	public int getScorePercentage(GeneticCode bot){
-		for(int i=0;i<botCount;i++){
-			if(scores.get(i).getName()==bot.getName())//This reference match check is ok, all names are created at compile time from the evolveBotNames array
-				return scores.get(i).getScorePercentage();
-		}
-		System.err.println("Score not found:"+bot.getName());
-		return 0;
-	}
-	
-	private class RobotScore{
-		String botName;
-		float score;
-		int battleCount;
-	
-		public RobotScore (String name){
-			botName=name;
-			score=0;
-			battleCount=0;
-		}
-		public void addPoints(float points){
-			score+=points;
-			battleCount++;
-		}
-		public String getName(){
-			return botName;
-		}
-		public int getScorePercentage(){
-			return Math.round(score/battleCount*100);
-		}
-		public float getScoreFloat(){
-			return score;
-		}
-	}
-	
-	private class RobotScoreComparator implements Comparator<RobotScore>{
-		public int compare(RobotScore rs1,RobotScore rs2){
-			float score1=rs1.getScoreFloat();
-			float score2=rs2.getScoreFloat();
-			if(score1>score2){
-				return -1;
-			}else if(score1<score2){
-				return 1;
-			}else{
-				return 0;
-			}
-		}
-	}
+
 }

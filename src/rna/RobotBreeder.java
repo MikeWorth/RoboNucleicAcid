@@ -65,7 +65,7 @@ public class RobotBreeder {
 			System.out.println("Fighting took:" + Double.valueOf((System.currentTimeMillis() - fightingStartTime)/1000) + "s");
 
 			GeneticCode winner=rankedBots[0];
-			int winnerScore=league.getScore(winner);
+			int winnerScore=league.getScorePercentage(winner);
 			int averageScore=league.getAverageScore();
 
 			System.out.println(winner.getName() + "(" + winner.getPersonifiedName() + ") wins generation " + String.valueOf(generation) + "!");
