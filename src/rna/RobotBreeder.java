@@ -3,6 +3,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class RobotBreeder {
@@ -11,7 +13,7 @@ public class RobotBreeder {
 	private static int CLOSESTALLOWEDINCEST=2;
 	
 	private static int FEASTMAXLENGTH=5000;
-	private static int FAMINEMAXLENGTH=500;
+	private static int FAMINEMAXLENGTH=2000;
 	private static int FEASTDURATION=1000;
 	private static int FAMINEDURATION=1000;
 	private static int FFTRANSITIONRATE=10;//this is the amount that the max length will change per generation
@@ -23,6 +25,7 @@ public class RobotBreeder {
 	
 	private static String LogfileName="RNA log.csv";
 
+	private static int randomSeed;
 	public static Random generator = new Random();
 
 	private static String[] evolveBotNames(){
@@ -34,14 +37,28 @@ public class RobotBreeder {
 	}
 
 	private static String[] manualBotNames={
-		"supersample.SuperSpinBot*",
-		"sample.SpinBot"
-	};		
-
+		"sample.SpinBot",
+		"sample.Corners",
+		"sample.Crazy",
+		"sample.RamFire",
+		"sample.Walls",
+		"supersample.SuperSpinBot*"
+	};
+	private static int numberOfManualBotsToChallenge=1;
+	private static int newChallengerThreashold = 75;
+	private static boolean evolveBotsFightEachOther = false;
+	
 	public static void main(String[] args) throws IOException{
 
+		//Use a constant default if user doesn't enter a seed
+		if (args.length==0){
+			randomSeed=0;
+		}else{
+			randomSeed=Integer.parseInt(args[0]);
+		}
+		
 		// seed RNG with command line value
-		generator = new Random(Integer.parseInt(args[0]));
+		generator = new Random(randomSeed);
 		ScoreKeeper.setMaxGenomeLength(FEASTMAXLENGTH);
 
 		Generation currentGeneration = new Generation(evolveBotNames());
@@ -59,7 +76,7 @@ public class RobotBreeder {
 
 
 			double fightingStartTime=System.currentTimeMillis();
-			RobotLeague league = new RobotLeague(currentGeneration, manualBotNames, false); 
+			RobotLeague league = new RobotLeague(currentGeneration, manualBotNames, numberOfManualBotsToChallenge, evolveBotsFightEachOther); 
 			rankedBots=league.getChallengersInOrder();
 
 			System.out.println("Fighting took:" + Double.valueOf((System.currentTimeMillis() - fightingStartTime)/1000) + "s");
@@ -137,6 +154,16 @@ public class RobotBreeder {
 					feastGenerationsRemaining=FEASTDURATION;
 				}
 				ScoreKeeper.setMaxGenomeLength(newLength);
+			}
+			
+			//Introduce a new challenger bot if the current generation average is high enough
+			if (newChallengerThreashold<averageScore){
+				if(manualBotNames.length>numberOfManualBotsToChallenge){
+					numberOfManualBotsToChallenge++;
+				}else{
+					//once the evolvebots can beat all opposition, set them loose on each other! 
+					//TODO: fix evolveBotsFightEachOther=true;
+				}
 			}
 
 		}

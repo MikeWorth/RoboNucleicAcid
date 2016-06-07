@@ -15,10 +15,10 @@ public class RobotLeague {
 	private List<RobotScore> scores;
 	private String[] botNames;
 	
-	public RobotLeague(Generation generation,String[] yardstickBots,boolean challengersBattleEachOther) throws FileNotFoundException, UnsupportedEncodingException{
+	public RobotLeague(Generation generation,String[] yardstickBots,int numberOfYardstickBotsToChallenge,boolean challengersBattleEachOther) throws FileNotFoundException, UnsupportedEncodingException{
 		
 		botGenomes=generation.getBots();
-		numberOfChallengers=botGenomes.length;//TODO is this a good thing?
+		numberOfChallengers=botGenomes.length;//We have to work up to fighting all of them - robotbreeder tells us how many to include TODO: check this isn't too high
 		botNames=new String[numberOfChallengers];
 		
 		scores = new ArrayList<RobotScore>();
@@ -55,13 +55,12 @@ public class RobotLeague {
 		RobotBattle[][] yardstickBattles = new RobotBattle[yardstickBots.length][botGenomes.length];
 		
 		//Now make each challengerBot fight each yardstickBot 
-		for(int i=0;i<yardstickBots.length;i++){
+		for(int i=0;i<numberOfYardstickBotsToChallenge;i++){
 			for (int j=0;j<botGenomes.length;j++){
 				String pairingNames[]={yardstickBots[i], botGenomes[j].getName()};
 				int pairingGenomeLengths[]={0,botGenomes[j].toString().length()};
 				yardstickBattles[i][j] = new RobotBattle(pairingNames,pairingGenomeLengths);
 				yardstickBattles[i][j].run();
-				//yardstickBattles[i][j].join();
 				scores.get(j).addPoints(yardstickBattles[i][j].getScores()[1]);
 			}				
 		}
